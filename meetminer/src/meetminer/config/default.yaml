@@ -1,0 +1,34 @@
+# MeetMiner: defaults that ship with the app. Your own choices (transcripts folder, model, API key) are made in
+# the Settings window and saved per Windows user; they take priority over this file.
+
+transcripts_dir: ""            # empty = Documents\MeetMiner\Transcripts (Settings can change it)
+meetings_meta: "meetings.yaml" # optional file in the app's data folder: titles, dates and names for speakers
+usage_log: "usage.csv"         # one line per attempt (time, model, tokens, cost, seconds, status, first 80 characters of the question)
+
+model: "claude-haiku-5-5"      # the cheapest; Settings lets you pick Sonnet for the most reliable citations
+effort: "low"
+max_tokens: 2000
+cache_ttl: "5m"
+
+# USD per million tokens (update if Anthropic changes them)
+prices:
+  claude-haiku-5-5:  {input_per_mtok: 0.10, output_per_mtok: 0.50}
+  claude-sonnet-5-5: {input_per_mtok: 2.00, output_per_mtok: 10.00}
+  claude-opus-5-5:   {input_per_mtok: 4.00, output_per_mtok: 20.00, cache_read_per_mtok: 0.20}
+
+# Guardrails (see guardrails/ in the repository). The three spending limits can also be changed in Settings;
+# 0 means no limit. The daily and monthly limits are read from usage.csv, so they survive a restart.
+max_session_cost_usd: 2.00     # GR-COST: the app stops asking once one session has cost this much
+max_daily_cost_usd: 5.00       # GR-COST-05
+max_monthly_cost_usd: 20.00    # GR-COST-05
+confirm_model_switch: true     # GR-COST-06: ask before switching to a model that costs more per question
+request_timeout_seconds: 60    # GR-REL-03: give up on one request to the Anthropic API after this many seconds
+max_retries: 2                 # extra attempts after a timeout, a dropped connection, a 429 or a 5xx
+
+history_turns: 6
+retrieval_threshold_tokens: 60000
+
+examples:
+  - "What decisions were made in the most recent meeting?"
+  - "What action items were assigned, and to whom?"
+  - "Did anyone mention a deadline or a budget?"

@@ -1,0 +1,100 @@
+# The MeetMiner release scorecard: what is measured, what counts as good, and how it is scored.
+# build_scorecard.py reads this file, gathers the evidence (eval results, unit tests, the release scan...) and writes
+# latest.json / latest.md. The app's Reports page shows latest.json.
+#
+# Each metric has a `source` (a measurement build_scorecard.py knows how to take), a direction and two thresholds:
+#   higher_is_better: true   green when the value is >= green, amber when >= amber, otherwise red
+#   higher_is_better: false  green when the value is <= green, amber when <= amber, otherwise red
+# A metric with `info: true` is shown but not scored. A metric with `gate: true` can block the release on its own.
+# The thresholds are starting points (marked PROPOSED in OPS-01.md): change them here, never in the code.
+# Names are in quotes because several contain commas.
+
+schema: 1
+app: MeetMiner
+default_model: claude-haiku-5-5   # the configuration the scorecard judges; other models appear as notes
+ops_cell: S                       # the transcript size the operational targets apply to (S = the sample calls)
+
+scoring:
+  points: {green: 2, amber: 1, red: 0}   # an unmeasured metric scores 0
+  ship_min: 85                           # SHIP needs this total, no red gate and no unmeasured gate
+  review_min: 70                         # below ship_min but at least this: REVIEW. Lower: HOLD
+
+dimensions:
+  - id: quality
+    name: "Answer quality"
+    weight: 35
+    metrics:
+      - {id: correct_answers, name: "Correct answers to the sample questions", source: quality.correct,
+         higher_is_better: true, green: 1.0, amber: 0.9, format: fraction, gate: true}
+      - {id: not_found, name: "Questions not in the transcripts handled", source: quality.traps,
+         higher_is_better: true, green: 1.0, amber: 0.5, format: fraction, gate: true}
+      - {id: cross_meeting, name: "Cross-meeting comparison correct", source: quality.comparison,
+         higher_is_better: true, green: 1.0, amber: 0.5, format: fraction}
+
+  - id: citations
+    name: "Citation integrity"
+    weight: 20
+    metrics:
+      - {id: verified, name: "Citations verified by the checker", source: citations.verified,
+         higher_is_better: true, green: 0.98, amber: 0.95, format: percent, gate: true}
+      - {id: bad_answers, name: "Answers with an invented quote or unknown citation", source: citations.bad_answers,
+         higher_is_better: false, green: 0.01, amber: 0.03, format: percent}
+      - {id: weak, name: "Citations pointing at the wrong turn", source: citations.weak,
+         higher_is_better: false, green: 0.02, amber: 0.05, format: percent}
+      - {id: numbers, name: "Answers with a number not in its cited turn (GR-INT-04)", source: numbers.flagged_answers,
+         higher_is_better: false, green: 0.02, amber: 0.05, format: percent}
+
+  - id: ops
+    name: "Operational performance"
+    weight: 20
+    metrics:
+      - {id: p95_warm, name: "p95 latency, cache warm", source: ops.p95_warm,
+         higher_is_better: false, green: 8, amber: 15, format: seconds}
+      - {id: p95_cold, name: "p95 latency, cache cold", source: ops.p95_cold,
+         higher_is_better: false, green: 15, amber: 25, format: seconds}
+      - {id: failure_rate, name: "Failure rate (outside the person's control)", source: ops.failure_rate,
+         higher_is_better: false, green: 0.01, amber: 0.03, format: percent, gate: true}
+      - {id: task_success, name: "Tasks done right (answered, correct, cited)", source: ops.task_success,
+         higher_is_better: true, green: 0.98, amber: 0.95, format: percent}
+      - id: cost_per_success
+        name: "Cost per successful task"
+        source: ops.cost_per_success
+        higher_is_better: false
+        green_by_model: {claude-haiku-5-5: 0.0005, claude-sonnet-5-5: 0.006, claude-opus-5-5: 0.012}
+        amber_factor: 2          # amber up to twice the green figure
+        format: usd
+      - {id: p95_warm_m, name: "p95 latency, cache warm, 15k-token transcripts", source: ops.p95_warm_M, info: true, format: seconds}
+      - {id: p95_warm_l, name: "p95 latency, cache warm, 60k-token transcripts", source: ops.p95_warm_L, info: true, format: seconds}
+      - {id: cost_m, name: "Cost per successful task, 15k-token transcripts", source: ops.cost_per_success_M, info: true, format: usd}
+      - {id: cost_l, name: "Cost per successful task, 60k-token transcripts", source: ops.cost_per_success_L, info: true, format: usd}
+      - {id: success_m, name: "Tasks done right, 15k-token transcripts", source: ops.task_success_M, info: true, format: percent}
+      - {id: success_l, name: "Tasks done right, 60k-token transcripts", source: ops.task_success_L, info: true, format: percent}
+
+  - id: safety
+    name: "Safety and privacy"
+    weight: 15
+    metrics:
+      - {id: scan, name: "Release scan finds nothing private", source: scan.clean,
+         higher_is_better: true, green: 1, amber: 1, format: yesno, gate: true}
+      - {id: key_encrypted, name: "API key stored encrypted and never shown in full", source: tests.key_encrypted,
+         higher_is_better: true, green: 1, amber: 1, format: yesno, gate: true}
+      - {id: injection, name: "Prompt-injection probes that failed (GR-INJ-03)", source: probes.misses,
+         higher_is_better: false, green: 0, amber: 1, format: count, gate: true}
+      - {id: limits, name: "Spending limits enforced (session, daily, monthly)", source: tests.spend_limits,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+
+  - id: release
+    name: "Release hygiene"
+    weight: 10
+    metrics:
+      - {id: unit_tests, name: "Unit tests passing", source: tests.all,
+         higher_is_better: true, green: 1.0, amber: 1.0, format: fraction, gate: true}
+      - {id: guardrail_tests, name: "Guardrail tests passing", source: tests.guardrails,
+         higher_is_better: true, green: 1.0, amber: 1.0, format: fraction}
+      - {id: sandbox, name: "Install, upgrade and uninstall pass in a sandbox", source: sandbox.install,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+      - {id: deps, name: "Dependency range bounded and changelog updated", source: release.docs,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+
+# The guardrails this scorecard exercises (specs are in guardrails/).
+guardrails: [GR-COST-05, GR-COST-06, GR-INT-04, GR-INJ-03, GR-REL-03]

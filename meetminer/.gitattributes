@@ -1,0 +1,6 @@
+# Normalise line endings in the repository; the working copy follows each developer's git settings.
+* text=auto
+*.png binary
+*.ico binary
+*.exe binary
+*.zip binary

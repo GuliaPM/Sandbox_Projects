@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "meetminer"
+dynamic = ["version"]
+description = "A lightweight, efficient tool designed to parse meeting transcripts and extract structured data instantly. Whether you are dealing with Zoom, Teams, or Google Meet transcripts, this application automates the tedious process of digging through text by pulling out actionable insights, summary points, and key metadata."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["otter.ai", "transcripts", "meetings", "search", "claude", "anthropic", "tkinter"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Topic :: Office/Business",
+]
+dependencies = [
+    "anthropic>=2.3,<3",
+    "pyyaml>=6",
+]
+
+[project.optional-dependencies]
+# Everything needed to run the tests and to build the Windows installer.
+dev = [
+    "pyinstaller>=6.10",
+]
+
+[project.gui-scripts]
+meetminer = "meetminer.app:run"
+
+[tool.setuptools.dynamic]
+version = { attr = "meetminer.version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+meetminer = ["config/*.yaml", "assets/*"]

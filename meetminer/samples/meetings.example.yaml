@@ -1,0 +1,19 @@
+﻿# Optional. Save a copy as "meetings.yaml" in the app's data folder (Settings shows where the settings live; installed:
+# %APPDATA%\MeetMiner, from a checkout: .local\) to give meetings titles and dates and to name speakers.
+# Keys can be the transcript's file name, the file name without its extension, or the title derived from it.
+#
+# Otter only labels speakers "Speaker 1", "Speaker 2", ... and the numbering restarts in every file, so the same person
+# can be a different number in each meeting. Mapping a label adds a name to it in the prompt and in citations
+# (for example "Speaker 2 (Priya)"). Do not use commas or nested brackets in names.
+
+"Product planning call_transcript.txt":
+  title: "Product planning"     # shown in citations; keep it short
+  date: 2026-10-20              # the transcript itself says nothing about when the call happened
+  speakers:
+    "Speaker 1": "Priya"
+    "Speaker 2": "Marcus"
+
+"Customer onboarding call_transcript.txt":
+  title: "Customer onboarding"
+  speakers:
+    "Speaker 1": "Alex"

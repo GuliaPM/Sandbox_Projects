@@ -1,0 +1,196 @@
+{
+  "suite": "quality",
+  "model": "claude-haiku-5-5",
+  "effort": "low",
+  "run_at": "2026-10-25T00:34:38",
+  "questions": 10,
+  "passed": 10,
+  "cost_usd": 0.001983,
+  "outcomes": [
+    {
+      "id": "launch-date",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.000597,
+      "answer": "The launch was moved to November 14th. The original date was October 24th, and the move was proposed because the payment provider integration was behind schedule.\n\nSupporting detail:\n- Speaker 1 said, \"We planned to launch on October 24th, but the payment provider integration is behind, and Marcos has been very honest that we can't test it properly before then. So my proposal is to move the launch to November 14th.\" [Product planning call, Speaker 1, 00:00]\n- Speaker 2 later explained that the provider changed its sandbox the previous week, so their test cards stopped working and they lost about four days, and that November 14th is realistic but should not be earlier. [Product planning call, Speaker 2, 01:35]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 5,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "qa-budget",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.000153,
+      "answer": "$18,000 was approved for QA contractor help, in the Product planning call. Priya (Speaker 1) said the original budget was $12,000, but because the schedule moved and a second tester was needed, she asked for $18,000, and said finance was okay with it as long as spending stays under that number [Product planning call, Speaker 1, 00:00]. Her closing summary also states \"the budget is $18,000\" [Product planning call, Speaker 1, 06:30].\n\nThe name \"Priya\" comes from the transcript only in the sense that Speaker 1 is addressed as Priya by Dana in the same meeting [Product planning call, Speaker 3, 03:05], so that identification is inferred.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 4,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "beta-group",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.000147,
+      "answer": "The beta is 25 customers, and the invitations go out on November 3rd.\n\n- Beta size: Speaker 1 said, \"I'd like to invite 25 customers and send the invites on November 3rd\" [Product planning call, Speaker 1, 00:00]. Speaker 1 later confirmed, \"the beta is 25 customers\" [Product planning call, Speaker 1, 06:30].\n- Invitation date: the same line gives November 3rd [Product planning call, Speaker 1, 00:00]. Speaker 4 also refers to \"the invites go out on the 3rd\" [Product planning call, Speaker 4, 04:10].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "api-spec-owner",
+      "kind": "commitment",
+      "passed": true,
+      "cost": 0.000153,
+      "answer": "Marcus owns the API spec, and it is due October 30th.\n\nIn the Product planning call, Speaker 2 (addressed as Marcus by Speaker 1) says: \"What I need is a clear API spec, and I can deliver the first complete version of the API spec by October 30th.\" [Product planning call, Speaker 2, 01:35]\n\nSpeaker 1 confirms in the recap: \"Marcus delivers the API spec by October 30th and builds the rollback switch before launch.\" [Product planning call, Speaker 1, 06:30]\n\nThe transcript spells the name \"Marcos\" once, at [Product planning call, Speaker 1, 00:00], and \"Marcus\" elsewhere.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 3,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "planning-actions",
+      "kind": "commitment",
+      "passed": true,
+      "cost": 0.000251,
+      "answer": "At the end of the Product planning call, Speaker 1 summarised these action items:\n\n- **Speaker 1 (Priya, per the Dana exchange):** Sends the final scope document by Friday. [Product planning call, Speaker 1, 06:30]\n- **Marcus:** Delivers the API spec by October 30th and builds the rollback switch before launch. [Product planning call, Speaker 1, 06:30]\n- **Dana:** Finishes the mockups by November 1st. [Product planning call, Speaker 1, 06:30]\n- **Leo:** Drafts the beta announcement email by November 2nd and briefs support. [Product planning call, Speaker 1, 06:30]\n- **Second tester:** Starts November 4th. [Product planning call, Speaker 1, 06:30]\n\nOther points confirmed in the summary: launch on November 14th, a budget of $18,000, a beta of 25 customers, and no dark mode or mobile app in version one. [Product planning call, Speaker 1, 06:30]\n\nNote that the transcript does not explicitly say that Speaker 1 is Priya. Dana's line addresses \"Priya\" directly at 03:05, which suggests that, but this is an inference. [Product planning call, Speaker 3, 03:05]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "seat-pricing",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.00012,
+      "answer": "The price is $25 per seat per month. Annual prepayment gets a 10% discount.\n\n- Price: Alex said, \"The price is $25 per seat per month, which is $1,000 a month, or $12,000 a year.\" [Customer onboarding call, Speaker 1, 00:00]\n- Discount: Alex said, \"If you prepay for the full year, there is a 10% discount, which brings it to $10,800.\" [Customer onboarding call, Speaker 1, 00:00]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "security-documents",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.00019,
+      "answer": "The customer asked for two documents before signing: a **SOC 2 Type II report** and a **data processing agreement**. Sam from finance made the request, because the shipment data includes customer addresses and their policy requires finance and security review before any signature [Customer onboarding call, Speaker 3, 02:15]. Alex, the account manager, agreed to send both by Wednesday [Customer onboarding call, Speaker 1, 03:00].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 1,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "cross-meeting",
+      "kind": "comparison",
+      "passed": true,
+      "cost": 0.000185,
+      "answer": "The Customer onboarding call discussed a security document. Sam (Speaker 3) asked for a SOC 2 Type II report and a data processing agreement, and said finance and security both have to review before any signature [Customer onboarding call, Speaker 3, 02:15]. Alex (Speaker 1) agreed to send both by Wednesday [Customer onboarding call, Speaker 1, 03:00].\n\nThe Product planning call discussed a QA budget. Priya (Speaker 1) said the original budget was $12,000 for contractor help on QA, and she is asking for $18,000 because a second tester is needed [Product planning call, Speaker 1, 00:00]. Note that the speaker is inferred to be Priya from the transcript's own mention of her name in the designs exchange, where Dana addresses \"Priya\" [Product planning call, Speaker 3, 03:05].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 3,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "trap-competitor",
+      "kind": "not_in_data",
+      "passed": true,
+      "cost": 8.7e-05,
+      "answer": "Not found in the transcripts. I looked for any competitor product named or compared against in either meeting, including the customer onboarding call (Brightwater Logistics) and the product planning call (Project Lighthouse). Neither transcript mentions a competitor product or any product comparison by a customer.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "trap-kubernetes",
+      "kind": "not_in_data",
+      "passed": true,
+      "cost": 0.000102,
+      "answer": "Not found in the transcripts. I searched both meetings (Customer onboarding call and Product planning call) for any mention of a Kubernetes migration, and neither contains the term or any related discussion of container or infrastructure migration. The closest items are the single sign-on setup in the onboarding call and the rollback switch in the product planning call, neither of which concerns Kubernetes.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": []
+    }
+  ]
+}

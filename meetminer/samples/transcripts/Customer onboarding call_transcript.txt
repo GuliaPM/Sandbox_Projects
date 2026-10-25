@@ -1,0 +1,44 @@
+Speaker 1  00:00
+Hi everyone, thanks for making the time. I'm Alex, I'm your account manager, and today is about getting Brightwater Logistics from signed intent to a working setup. I'll walk through the plan, then we'll go through questions. So here's the plan as I understand it. You are starting with 40 seats. The price is $25 per seat per month, which is $1,000 a month, or $12,000 a year. If you prepay for the full year, there is a 10% discount, which brings it to $10,800. I know Sam wanted to look at that. On the technical side there are three things. First, single sign-on, which your IT team sets up on your side using SAML, and we would like that done by November 7th. Second, the data import. You mentioned three years of shipment records, and what we need from you is a CSV export, ideally by November 10th. Third, training. We usually do two one hour sessions, and I have November 12th and November 13th open. If all of that goes to plan, we go live on November 17th. Does that match what you were expecting?
+
+Speaker 2  01:40
+Yes, mostly. I'm Jordan, I run operations here. Right now everything lives in spreadsheets, honestly, a lot of spreadsheets, so the CSV export is not a problem, I can get it to you earlier, probably by November 6th. The single sign on is the one I'm less sure about, our IT person, Kofi, is only in two days a week, so I'll ask him today and tell you if November 7th is a problem.
+
+Speaker 3  02:15
+And I'm Sam from finance. Two things from my side before we sign. We need your SOC 2 Type II report, and we need a data processing agreement, because the shipment data includes customer addresses. Our policy says finance and security both have to review before any signature.
+
+Speaker 1  03:00
+Understood, both are standard. I'll send the SOC 2 Type II report and the data processing agreement by Wednesday. On timing, the pricing in the proposal is held until November 20th, so if your review takes longer than planned, tell me early and I can ask for an extension.
+
+Speaker 3  03:35
+Okay. And just to confirm, the annual prepay is invoiced upfront, net 30?
+
+Speaker 1  03:50
+Yes, invoiced upfront with net 30 payment terms. Monthly billing is also available, just without the 10% discount.
+
+Speaker 2  04:15
+One more question, what about support? If something breaks during the import, who do we call?
+
+Speaker 1  04:30
+Standard support is by email and chat, with a response within 24 hours on business days. During onboarding you also get me directly, and I'll set up a shared channel so your questions don't wait in a queue. If you later want faster response times, there is a premium support option, but I don't think you need it at the start.
+
+Speaker 2  05:10
+That works. Can we do the training sessions in the afternoon? Mornings are the busiest time for the dispatch team.
+
+Speaker 1  05:25
+Sure, I'll book both sessions at 2 pm your time. Let me recap so we are all on the same page. Jordan sends the CSV export by November 6th. IT sets up single sign-on by November 7th. Sam gets the SOC 2 report and the data processing agreement from me by Wednesday. Training is on the 12th and 13th at 2 pm. And we go live on the 17th.
+
+Speaker 3  06:10
+One note. Going live on the 17th only works if we have signed by then, so with our two reviews we should plan to sign in the week of the 10th, not at the last minute.
+
+Speaker 1  06:30
+Good catch, I'll put the signature date in the plan as November 14th at the latest and keep the November 20th price hold as a safety net. I'll send the written plan after this call.
+
+Speaker 2  06:50
+Great, thank you, Alex.
+
+Speaker 3  06:52
+Thanks everyone.
+
+
+Transcribed by https://otter.ai

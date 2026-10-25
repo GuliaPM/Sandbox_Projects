@@ -1,0 +1,44 @@
+Speaker 1  00:00
+Okay, let's get started, thanks everybody for joining. So the goal today is to lock the plan for Project Lighthouse, which is the customer portal redesign, and to agree on who is doing what before the end of the month. Quick recap of where we are. We we planned to launch on October 24th, but the payment provider integration is behind, and Marcos has been very honest that we can't test it properly before then. So my proposal is to move the launch to November 14th. That gives us three weeks of buffer. I also want to confirm the scope for version one. We said web only. No mobile apps in version one, we will revisit that in the new year. And on budget, we originally had $12,000 for contractor help on QA, but because the schedule moved and we need a second tester, I'm asking for $18,000. I already ran that by finance and they are okay with it as long as we stay under that number. Then for the beta, I'd like to invite 25 customers and send the invites on November 3rd, so we get a full week of feedback before launch. Let me stop there and hear from you. Marcus, can you start with the integration?
+
+Speaker 2  01:35
+Yeah, sure. So the payment integration, the provider changed their sandbox last week and our test cards stopped working, so I lost about, I think, four days. The good news is the new sandbox is more stable. I think November 14th is realistic, but I would not go earlier than that. What I need is a clear API spec, and I can deliver the first complete version of the API spec by October 30th. After that, the front end team can build against it without waiting for me. One more risk, our only QA person, Hannah, is on leave from November 8th to the 10th, so those three days are exactly when we'd normally test the payment flow end to end. That's why the contractor budget matters to me.
+
+Speaker 1  02:50
+Right, and that's covered, the second tester starts November 4th. Dana, how are the designs?
+
+Speaker 3  03:05
+So the designs are mostly done, the, um, the dashboard and the invoice pages are finished. What's left is the settings page and the empty states. I can finish the high fidelity mockups by November 1st. I do want one decision from you, Priya. Do we keep the dark mode in version one? It adds roughly three days of work for me.
+
+Speaker 1  03:50
+Good question. Let's not do dark mode in version one. Put it on the list for version two. Leo, marketing side?
+
+Speaker 4  04:10
+Okay. For the beta I will draft the announcement email by November 2nd so it is ready when the invites go out on the 3rd. I also want to ask about analytics. Are we building our own dashboard to track beta usage, or do we use an off the shelf tool? Because if it's off the shelf I need to know which events to ask for.
+
+Speaker 1  04:50
+Off the shelf. We don't have time to build our own. Marcus, can you add the tracking snippet during the beta setup?
+
+Speaker 2  05:05
+Yes, it is small, maybe half a day. I will do it the week of November 3rd. And I want to say one more thing about rollback. If the payment flow fails in production, I want a switch that sends customers back to the old portal within, um, within a few minutes. I'll build that switch before launch, it's another day of work, and I'd like us to agree that we do not launch without it.
+
+Speaker 1  05:50
+Agreed, no launch without the rollback switch. That's a launch condition. What about support, are they ready?
+
+Speaker 4  06:05
+Support has not seen the new portal yet. I'll ask them to join the beta kickoff on November 3rd so they can learn it with the customers, and I'll send them a short guide before that.
+
+Speaker 1  06:30
+Perfect. Let me summarize the action items. I will send the final scope document by Friday. Marcus delivers the API spec by October 30th and builds the rollback switch before launch. Dana finishes the mockups by November 1st. Leo drafts the beta announcement email by November 2nd and briefs support. And the second tester starts November 4th. The launch is November 14th, the budget is $18,000, the beta is 25 customers, and there is no dark mode and no mobile app in version one. Anything I missed?
+
+Speaker 3  07:20
+No, I think that's everything. Thanks.
+
+Speaker 2  07:24
+All good.
+
+Speaker 4  07:26
+Sounds good, thank you.
+
+
+Transcribed by https://otter.ai

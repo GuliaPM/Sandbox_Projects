@@ -1,0 +1,208 @@
+{
+  "suite": "quality",
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "run_at": "2026-10-25T00:40:03",
+  "questions": 10,
+  "passed": 9,
+  "cost_usd": 0.044596,
+  "outcomes": [
+    {
+      "id": "launch-date",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.013469,
+      "answer": "The launch was moved to November 14th, because the payment provider integration is behind and can't be tested properly before the original October 24th date.\n\n- Speaker 1 recapped that the plan had been to launch on October 24th, but the payment provider integration was behind and Marcos said it couldn't be tested properly before then, so they proposed November 14th, giving three weeks of buffer [Product planning call, Speaker 1, 00:00].\n- Speaker 2 (spelled \"Marcus\" in the transcript, \"Marcos\" in Speaker 1's remarks, apparently the same person) said the provider changed its sandbox the week before and the test cards stopped working, costing about four days. He said November 14th is realistic but he wouldn't go earlier [Product planning call, Speaker 2, 01:35].\n- Speaker 1's closing summary confirmed the launch as November 14th [Product planning call, Speaker 1, 06:30].\n\nThis refers to the Project Lighthouse launch (the customer portal redesign) from the product planning call. The customer onboarding call mentions a go-live date of November 17th, but that is a separate matter about Brightwater Logistics and was not moved.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "qa-budget",
+      "kind": "lookup",
+      "passed": false,
+      "cost": 0.003571,
+      "answer": "The budget for QA contractor help is $18,000, but the transcript shows finance's approval only as relayed by Speaker 1, who said it was \"okay as long as we stay under that number.\" The original budget was $12,000.\n\n- Speaker 1 said the original budget was $12,000 and that, because the schedule moved and a second tester is needed, they were asking for $18,000 [Product planning call, Speaker 1, 00:00].\n- Speaker 1 said they had already run that by finance, who \"are okay with it as long as we stay under that number\" [Product planning call, Speaker 1, 00:00].\n- In the closing summary, Speaker 1 restated the budget as $18,000 [Product planning call, Speaker 1, 06:30]. No one objected afterward.\n\nFinance's approval is secondhand, since no finance representative speaks in the meeting.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 1,
+      "numbers": {
+        "checked": 5,
+        "flagged": 0
+      },
+      "failed_checks": [
+        "no invented quotes or unknown citations"
+      ]
+    },
+    {
+      "id": "beta-group",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.002941,
+      "answer": "The beta is for 25 customers, and the invitations go out on November 3rd.\n\n- Priya (inferred from Dana's address to her; Speaker 1) proposed inviting 25 customers and sending the invites on November 3rd, to allow a full week of feedback before launch [Product planning call, Speaker 1, 00:00].\n- Leo (Speaker 4) said he would draft the announcement email by November 2nd so it is ready when the invites go out on the 3rd [Product planning call, Speaker 4, 04:10].\n- The closing summary repeats that the beta is 25 customers [Product planning call, Speaker 1, 06:30].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "api-spec-owner",
+      "kind": "commitment",
+      "passed": true,
+      "cost": 0.002601,
+      "answer": "Marcus owns the API spec (the transcript also spells him \"Marcos\") and it is due October 30th, for the first complete version.\n\n- Marcus said he can deliver the first complete version of the API spec by October 30th, after which the front end team can build against it without waiting for him [Product planning call, Speaker 2, 01:35].\n- In the action-item summary, Priya (inferred from Dana addressing Speaker 1 as \"Priya\") said Marcus delivers the API spec by October 30th [Product planning call, Speaker 1, 06:30].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 3,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "planning-actions",
+      "kind": "commitment",
+      "passed": true,
+      "cost": 0.005933,
+      "answer": "The action items were summarized by Speaker 1 (addressed as Priya in the meeting) near the end of the Product planning call [Product planning call, Speaker 1, 06:30]:\n\n- **Speaker 1:** send the final scope document by Friday [Product planning call, Speaker 1, 06:30].\n- **Marcus (transcribed elsewhere as \"Marcos\"):** deliver the API spec by October 30th and build the rollback switch before launch [Product planning call, Speaker 1, 06:30].\n- **Dana:** finish the mockups by November 1st [Product planning call, Speaker 1, 06:30].\n- **Leo:** draft the beta announcement email by November 2nd and brief support [Product planning call, Speaker 1, 06:30].\n- **Second tester:** starts November 4th [Product planning call, Speaker 1, 06:30].\n\nThe summary also restated the agreed decisions: launch on November 14th, an $18,000 budget, a 25-customer beta, and no dark mode or mobile app in version one [Product planning call, Speaker 1, 06:30]. Dana, Marcus and Leo each confirmed nothing was missed [Product planning call, Speaker 3, 07:20] [Product planning call, Speaker 2, 07:24] [Product planning call, Speaker 4, 07:26].\n\nEarlier in the call, Marcus also committed to adding the analytics tracking snippet the week of November 3rd [Product planning call, Speaker 2, 05:05]. That was not repeated in the closing summary.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 8,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "seat-pricing",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.002825,
+      "answer": "The price is $25 per seat per month, and prepaying for the full year gives a 10% discount.\n\n- Alex (Speaker 1) said the price is $25 per seat per month, which for 40 seats is $1,000 a month or $12,000 a year. With a full-year prepay the 10% discount brings it to $10,800 [Customer onboarding call, Speaker 1, 00:00].\n- Alex confirmed the annual prepay is invoiced upfront with net 30 payment terms. Monthly billing is also available, but without the 10% discount [Customer onboarding call, Speaker 1, 03:50].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 10,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "security-documents",
+      "kind": "lookup",
+      "passed": true,
+      "cost": 0.002819,
+      "answer": "The customer's finance contact, Sam, asked for two documents before signing: a SOC 2 Type II report and a data processing agreement. Sam said the data processing agreement is needed because the shipment data includes customer addresses. Sam also said policy requires both finance and security to review before any signature [Customer onboarding call, Speaker 3, 02:15].\n\nAlex, the account manager, said both are standard and promised to send them by Wednesday [Customer onboarding call, Speaker 1, 03:00]. Alex repeated that commitment in the recap [Customer onboarding call, Speaker 1, 05:25].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 1,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "cross-meeting",
+      "kind": "comparison",
+      "passed": true,
+      "cost": 0.004315,
+      "answer": "The security document came up in the Customer onboarding call, and the QA budget came up in the Product planning call.\n\n**Security document: Customer onboarding call**\n- Sam, from finance, said they need the SOC 2 Type II report and a data processing agreement, because the shipment data includes customer addresses. [Customer onboarding call, Speaker 3, 02:15]\n- Alex, the account manager, agreed to send the SOC 2 Type II report and the data processing agreement by Wednesday. [Customer onboarding call, Speaker 1, 03:00]\n\n**QA budget: Product planning call**\n- The speaker running the meeting (addressed as Priya, inferred from Dana's question) said the original $12,000 for contractor QA help was insufficient because the schedule moved and a second tester is needed. They asked for $18,000, and said finance is okay with it as long as spending stays under that number. [Product planning call, Speaker 1, 00:00]\n- The budget was restated in the action-item summary as $18,000. [Product planning call, Speaker 1, 06:30]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 5,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "trap-competitor",
+      "kind": "not_in_data",
+      "passed": true,
+      "cost": 0.002669,
+      "answer": "Not found in the transcripts. I looked for any mention of a competitor or comparison product in the customer onboarding call (Brightwater Logistics) and the product planning call, and neither names one.\n\nThe closest related material is that in the onboarding call, Jordan says everything currently lives in spreadsheets [Customer onboarding call, Speaker 2, 01:40]. That describes their current setup, not a competitor product they compared against. The product planning call mentions an off-the-shelf analytics tool, but no specific product is named [Product planning call, Speaker 1, 04:50].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": []
+    },
+    {
+      "id": "trap-kubernetes",
+      "kind": "not_in_data",
+      "passed": true,
+      "cost": 0.003451,
+      "answer": "Not found in the transcripts. I searched both meetings for any mention of Kubernetes, infrastructure or hosting migration, containers, or similar topics, and found none.\n\nThe only related technical topics are these:\n- In the Customer onboarding call, the discussion covered single sign-on setup via SAML, a CSV data import of shipment records, and training sessions. For example, Alex said \"the data import\" needs \"a CSV export\" [Customer onboarding call, Speaker 1, 00:00]. That is a customer data import, not a Kubernetes migration.\n- In the Product planning call, the technical topics were the payment provider integration, the API spec, a rollback switch back to the old portal, and an analytics tracking snippet [Product planning call, Speaker 2, 05:05]. None of these involve Kubernetes.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": []
+    }
+  ]
+}
