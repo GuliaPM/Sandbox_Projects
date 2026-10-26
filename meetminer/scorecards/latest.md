@@ -53,7 +53,7 @@
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Unit tests passing **[gate]** | ≥ 100% | 269/269 (100.0%) | good |
+| Unit tests passing **[gate]** | ≥ 100% | 271/271 (100.0%) | good |
 | Guardrail tests passing | ≥ 100% | 50/50 (100.0%) | good |
 | Install, upgrade and uninstall pass in a sandbox | yes | pass | good |
 | Dependency range bounded and changelog updated | yes | yes | good |
@@ -70,7 +70,7 @@
 - Quality eval: evals/results/quality-claude-haiku-5-5-20261026-103352.json
 - Held-out set (information only): evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json, evals/results/retrieval-heldout-20261026-104901.json, evals/results/retrieval-heldout-hard-20261026-104904.json
 - Injection probes: evals/results/probes-claude-haiku-5-5-20261025-003607.json
-- Unit tests: 269/269 ok
+- Unit tests: 271/271 ok
 - Release scan: CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.
 - Install test: SANDBOX RESULT: PASS (14/14 checks)
 

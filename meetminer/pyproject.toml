@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "meetminer"
 dynamic = ["version"]
-description = "A lightweight, efficient tool designed to parse meeting transcripts and extract structured data instantly. Whether you are dealing with Zoom, Teams, or Google Meet transcripts, this application automates the tedious process of digging through text by pulling out actionable insights, summary points, and key metadata."
+description = "A Windows desktop app that answers questions about Otter.ai .txt transcripts, with every quote and figure checked against the speaker turn it cites."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]

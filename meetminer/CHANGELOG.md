@@ -2,6 +2,47 @@
 
 All notable changes to MeetMiner are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.2.1] - unreleased
+
+An audit of what the repository claims. Every result below is measured, and several got worse; they are kept as measured.
+
+### Changed
+- **Eval contamination removed from RAG retrieval.** The synonym list mirrored the wording of the eval questions; the
+  eval-derived pairs (`price→per`, `document(s)→report/agreement/contract`, `owns→deliver`, `security→soc/review`,
+  `discount→prepay`, `invitations→invites`, `signing→sign/signature`) were removed and nothing was added. Audit and
+  before/after numbers: `evals/CONTAMINATION.md`.
+- **`rag_max_tokens` now means real tokens.** Tokens were estimated as characters / 4, about 1.4 times too low for these
+  transcripts, so RAG sent up to 9,552 tokens of excerpts against a 6,000 budget. One shared estimate,
+  `transcripts.estimate_tokens` (2.7 characters per token, calibrated with the token-counting endpoint), is now used by
+  the retriever, RET-01 and the no-key size check. Details: `evals/TOKENS.md`.
+- **One measured size label per transcript size** everywhere: S about 3,900 tokens and 2 meetings, M about 15,000 and 9,
+  L about 65,000 and 39, XL about 160,000 and 99. The 1.2.0 entry below gave the XL target (150,000) and overstated it
+  as "some twenty one-hour calls"; at the sample calls' rate of about 12,700 tokens per hour it is about a dozen.
+- **README opening and limitations.** The first paragraph claimed Zoom, Teams and Google Meet support and "structured
+  data extraction"; it now says what the app does (questions about Otter.ai `.txt` transcripts, with quotes and figures
+  checked). The limitations now describe both engines, including that RAG matches words, not meaning. The same
+  boilerplate was removed from the `pyproject.toml` description, and two stale engine messages were corrected.
+- **CI status.** GitHub Actions has run the tests on every push since 1.1.0; GR-REL-09 is marked in place and the
+  workflow's "has not been run on GitHub yet" header is gone.
+
+### Added
+- **Held-out question set** (`evals/heldout/questions.yaml`): 12 paraphrased questions, model-written and frozen by
+  SHA-256 (a unit test fails if the file changes without the hash). Never tune retrieval against it.
+- **Near-miss distractors**: `--distractors hard` builds M, L and XL from filler meetings with other launch dates, budgets,
+  SOC reports, seat prices and action items. The original filler is unchanged.
+- `--questions` on `run_eval.py`, `ops_eval.py` and `retrieval_eval.py`, with follow-up questions (`follows:`);
+  `retrieval_eval.py --synonyms pre-audit` reproduces the "before" numbers.
+- **TOK-01** (`evals/token_count.py`): real token counts against the estimate (free, needs a key).
+- Scorecards: held-out quality and held-out RET-01 as information rows, and a "What this scorecard does and does not
+  show" section.
+
+### Results (unedited)
+- RET-01, original questions: 8/8 at every size with easy filler; with near-miss filler 7/8 at M, L and XL (the
+  cross-meeting question loses its onboarding turn). Held-out questions: 7/10 at S, 5 to 6/10 at M, L and XL.
+- Quality, original questions: 10/10 for both engines. Held-out: 10/12 full context, 9/12 RAG.
+- RAG scorecard: SHIP 98/100 (it was 100/100): 97% of tasks done right on the sample calls, amber against a 98% target.
+  Full-context scorecard: SHIP 100/100.
+
 ## [1.2.0] - 2026-10-25
 
 A second engine: RAG, next to full context, with a switch in the window and its own reports.

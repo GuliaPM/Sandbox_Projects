@@ -38,5 +38,29 @@ class CiClaimTests(unittest.TestCase):
                 self.assertNotIn(stale, text, path.name)
 
 
+class ProductClaimTests(unittest.TestCase):
+    """The app reads Otter.ai .txt exports and answers questions; nothing may claim more (README, package metadata)."""
+
+    def test_no_claim_of_other_transcript_sources_or_extraction(self):
+        import tomllib
+        description = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]["description"]
+        readme_intro = (ROOT / "README.md").read_text(encoding="utf-8").split("\n## ", 1)[0]
+        for text in (description, readme_intro):
+            lowered = text.lower()
+            self.assertIn("otter", lowered)
+            for claim in ("extract structured data", "whether you are dealing with zoom", "actionable insights",
+                          "key metadata"):
+                self.assertNotIn(claim, lowered)
+        self.assertIn("have not been tested", readme_intro)  # other sources are named only as untested
+
+    def test_the_limitations_describe_both_engines(self):
+        readme = (ROOT / "README.md").read_text(encoding="utf-8")
+        limits = readme.split("## Limitations", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("*Full context*", limits)
+        self.assertIn("*RAG*", limits)
+        self.assertIn("matches words, not meaning", limits)
+        self.assertNotIn("need the retrieval step", limits)
+
+
 if __name__ == "__main__":
     unittest.main()

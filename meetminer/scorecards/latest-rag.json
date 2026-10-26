@@ -3,7 +3,7 @@
   "app": "MeetMiner",
   "version": "1.2.0",
   "engine": "rag",
-  "generated": "2026-10-26T11:04:43",
+  "generated": "2026-10-26T11:15:11",
   "decision": "SHIP",
   "total": 97.5,
   "gates_failed": [],
@@ -318,7 +318,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "269/269 (100.0%)",
+          "measured": "271/271 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -380,7 +380,7 @@
       "evals/results/retrieval-heldout-20261026-104901.json",
       "evals/results/retrieval-heldout-hard-20261026-104904.json"
     ],
-    "unit_tests": "269/269 ok",
+    "unit_tests": "271/271 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

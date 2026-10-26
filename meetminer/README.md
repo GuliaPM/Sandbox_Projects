@@ -1,16 +1,14 @@
 # MeetMiner
 
-A lightweight, efficient tool designed to parse meeting transcripts and extract structured data instantly. Whether you are dealing with Zoom, Teams, or Google Meet transcripts, this application automates the tedious process of digging through text by pulling out actionable insights, summary points, and key metadata.
+**A Windows desktop app that answers questions about your Otter.ai `.txt` transcripts, with every quote and figure
+checked against the speaker turn it cites.** You type a question; it answers in a few seconds, every claim carries a
+clickable citation, and the exact quoted words are highlighted in the transcript next to the answer. If the answer is not
+in your meetings, it says so instead of guessing.
 
-> **Supported transcripts today:** MeetMiner is built and tested on Otter.ai text (`.txt`) exports, where each speaker
-> turn starts with a line such as `Speaker 2  04:09`. Transcripts from Zoom, Teams or Google Meet have not been tested
-> and may need converting to that layout first. Insights and summary points come from asking questions (for example
-> "What action items were assigned?"); there is no automatic summary or export of structured data yet.
-
-**Ask questions about your Otter.ai transcripts and get answers you can verify.** MeetMiner is a Windows desktop
-app. You type a question; it answers in a few seconds, every claim carries a clickable citation, and the exact quoted
-words are highlighted in the transcript next to the answer. If the answer is not in your meetings, it says so instead
-of guessing.
+It reads Otter.ai text exports, where each speaker turn starts with a line such as `Speaker 2  04:09`. Transcripts from
+Zoom, Teams or Google Meet have not been tested and would need converting to that layout first. It answers the questions
+you ask (for example "What action items were assigned?"); it does not write automatic summaries or export structured
+data.
 
 ![MeetMiner answering a question, with the quoted words highlighted in the transcript](docs/images/answer-and-source.png)
 
@@ -305,7 +303,11 @@ warning.
 - Otter timestamps mark the start of each speaker turn, so a citation points to a turn, which can be minutes long.
 - Otter labels unnamed speakers `Speaker 1`, `Speaker 2`, ... and restarts the numbering in every file. The app never
   guesses who anyone is; an optional `meetings.yaml` ([example](samples/meetings.example.yaml)) can name speakers and set dates.
-- It sends all transcripts with each question, so very large collections (tens of hours) need the retrieval step noted above.
+- The *Full context* engine sends every transcript with each question, so its cost and latency grow with the archive.
+- The *RAG* engine sends only a few thousand tokens per question, but it matches words, not meaning: a question worded
+  differently from the transcript can come back "not found" even though the answer is there (on the held-out
+  paraphrased questions, RAG found the answer passage for 7 of 10 on the sample calls; see
+  [`evals/CONTAMINATION.md`](evals/CONTAMINATION.md)). Rephrase with the speakers' words, or switch to *Full context*.
 - The Claude API is required; there is no offline mode.
 
 MeetMiner is an independent project and is not affiliated with Otter.ai or Anthropic.

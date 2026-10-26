@@ -232,8 +232,8 @@ def has_credentials() -> bool:
 
 
 def get_context(meetings: list[Meeting], question: str, history: list[tuple[str, str]]) -> str:
-    """The seam for scaling. Today every question gets the whole corpus. When the corpus outgrows
-    retrieval_threshold_tokens, this is the one function to replace with a retriever (see README)."""
+    """The full-context engine's transcript block: every question gets the whole corpus. The RAG engine does not use
+    this; it sends retrieval.Retriever's excerpts instead (see MeetingQA.ask)."""
     return render_corpus(meetings)
 
 
@@ -556,7 +556,7 @@ def inspect(settings: Settings, loaded: LoadResult, qa: MeetingQA) -> None:
         print(f"  (no API key available, so this is estimated from the length, about {CHARS_PER_TOKEN} characters per "
               "token; add a key in Settings for the exact count)")
     if tokens > settings.retrieval_threshold_tokens:
-        print("  The corpus is above the threshold: time to switch to retrieval (see README).")
+        print("  The corpus is above the threshold: consider the RAG engine (--engine rag, or the switch in the window).")
 
 
 def main() -> None:
