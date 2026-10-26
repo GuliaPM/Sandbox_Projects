@@ -35,6 +35,67 @@ FILLERS = ["Right, that makes sense.", "Okay, I will note that.", "Yeah, I agree
            "Does anyone object to that?", "Good, then we are aligned.", "Thanks, that helps a lot."]
 NUMBERS = [n for n in range(51, 98) if n not in (55, 77)]
 
+# --distractors hard: filler meetings that also carry NEAR-MISS facts (another project's launch date, another budget,
+# another vendor's SOC report, other people's action items, other seat prices). Each one differs from the facts the eval
+# questions ask about (other months, other amounts, other names, other meeting titles), so every expected answer stays
+# unique to its sample meeting and the cited file still decides whether an answer is right. The titles avoid "planning"
+# and "onboarding" because expect_files matches those words in file names. Nothing here touches the not-found traps
+# (competitors, Kubernetes, hiring plans, contract renewals).
+HARD_TITLES = ["Supplier review", "Pilot readiness", "Pricing committee", "Release readiness", "Partner kickoff",
+               "Warehouse app sync", "Vendor security check", "Store rollout", "Scanner program", "Label printer project"]
+VENDORS = ["Northwind Parcel", "Bluefin Labels", "Copperline Scanners", "Tallgrass Freight", "Pinecrest Payroll"]
+PROJECTS = ["Project Beacon", "Project Ridgeway", "Project Larkspur", "Project Saltmarsh"]
+HARD_MONTHS = ["December", "January", "February"]
+HARD_AMOUNTS = ["$14,500", "$16,000", "$21,000", "$9,500", "$27,000"]  # never $12,000 or $18,000
+SEAT_PRICES = [29, 32, 35, 38]  # never 25
+PREPAY_OFF = [5, 12, 15]  # never 10
+PILOT_SIZES = [30, 35, 45, 60]  # never 25
+SPECS = ["billing API", "inventory API", "label service API", "returns API"]
+
+
+def _near_miss(rng: random.Random) -> str:
+    who, other = rng.sample(NAMES, 2)
+    vendor, project, thing = rng.choice(VENDORS), rng.choice(PROJECTS), rng.choice(THINGS)
+    month, day = rng.choice(HARD_MONTHS), rng.choice([d for d in range(2, 29) if d not in (14, 30)])
+    kind = rng.randrange(9)
+    if kind == 0:
+        return f"So the {project} launch moves to {month} {day}, because the {vendor} integration slipped again."
+    if kind == 1:
+        return (f"For contractor help on {thing} we budgeted {rng.choice(HARD_AMOUNTS)}, and finance is fine with it as "
+                f"long as we stay under that.")
+    if kind == 2:
+        return f"The {vendor} pilot starts with {rng.choice(PILOT_SIZES)} stores, and the invites go out on {month} {day}."
+    if kind == 3:
+        return f"{who} owns the {rng.choice(SPECS)} spec and will deliver the first complete version by {month} {day}."
+    if kind == 4:
+        return (f"{vendor} quoted ${rng.choice(SEAT_PRICES)} per seat per month, with {rng.choice(PREPAY_OFF)}% off if we "
+                f"prepay the full year.")
+    if kind == 5:
+        return (f"Before we sign with {vendor}, security wants their SOC 2 Type I report and a penetration test summary.")
+    if kind == 6:
+        return f"{who} will finish the {thing} mockups by {month} {day}, and {other} drafts the announcement email."
+    if kind == 7:
+        return f"{vendor} asked for our SOC 1 report before their finance team signs anything, so {who} will send it."
+    return (f"Action items for {project}: {who} sends the scope document, {other} books the training, and the rollout "
+            f"review is on {month} {day}.")
+
+
+def make_hard_meeting(index: int, words: int = 700) -> tuple[str, str]:
+    """A filler meeting with near-miss facts: like make_meeting, plus one near-miss sentence in most turns."""
+    rng = random.Random(index * 104729 + 71)
+    title = f"{HARD_TITLES[index % len(HARD_TITLES)]}" + (f" {index // len(HARD_TITLES) + 1}" if index >= len(HARD_TITLES) else "")
+    turns, seconds, total = [], 0, 0
+    while total < words:
+        speaker = rng.randrange(1, 5)
+        sentences = [_sentence(rng) for _ in range(rng.randrange(3, 6))]
+        if rng.random() < 0.7:
+            sentences.insert(rng.randrange(len(sentences) + 1), _near_miss(rng))
+        text = " ".join(sentences)
+        turns.append(f"Speaker {speaker}  {seconds // 60:02d}:{seconds % 60:02d}\n{text}")
+        seconds += max(25, len(text.split()) // 2)
+        total += len(text.split())
+    return f"{title} call_transcript.txt", "\n\n".join(turns) + "\n\n\nTranscribed by https://otter.ai\n"
+
 
 def _sentence(rng: random.Random) -> str:
     who, other = rng.sample(NAMES, 2)
@@ -72,15 +133,23 @@ def make_meeting(index: int, words: int = 700) -> tuple[str, str]:
     return f"{title} call_transcript.txt", "\n\n".join(turns) + "\n\n\nTranscribed by https://otter.ai\n"
 
 
-def build_cell(cell: str, workdir: Path, measure: Callable[[Path], int] | None = None) -> Path:
+DISTRACTORS = ("easy", "hard")
+
+
+def build_cell(cell: str, workdir: Path, measure: Callable[[Path], int] | None = None,
+               distractors: str = "easy") -> Path:
     """The folder of transcripts for cell S, M, L or XL. For the others the filler is added to a copy of the samples, then
-    `measure(folder)` (prompt tokens) is used, if given, to bring the size within about 10% of the target."""
+    `measure(folder)` (prompt tokens) is used, if given, to bring the size within about 10% of the target.
+    distractors="hard" uses filler with near-miss facts (make_hard_meeting); "easy" is the original filler, unchanged."""
     cell = cell.upper()
     if cell not in TARGET_TOKENS:
         raise ValueError(f"unknown cell {cell!r}; use S, M, L or XL")
+    if distractors not in DISTRACTORS:
+        raise ValueError(f"unknown distractors {distractors!r}; use easy or hard")
     if cell == "S":
         return SAMPLES
-    folder = workdir / f"cell-{cell}"
+    make = make_hard_meeting if distractors == "hard" else make_meeting
+    folder = workdir / (f"cell-{cell}" if distractors == "easy" else f"cell-{cell}-hard")
     target = TARGET_TOKENS[cell]
     count = max(1, round((target - 3_900) / 1_500))  # a first guess: about 1,500 tokens per filler meeting
     for _ in range(4):
@@ -90,7 +159,7 @@ def build_cell(cell: str, workdir: Path, measure: Callable[[Path], int] | None =
         for f in SAMPLES.glob("*.txt"):
             shutil.copy2(f, folder / f.name)
         for i in range(count):
-            name, text = make_meeting(i)
+            name, text = make(i)
             (folder / name).write_text(text, encoding="utf-8")
         if measure is None:
             break

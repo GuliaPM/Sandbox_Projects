@@ -1,6 +1,6 @@
 # MeetMiner 1.2.0 release scorecard: RAG engine
 
-**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-25  ·  configuration: claude-haiku-5-5, RAG, cell S (fictional samples (samples/transcripts))
+**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-26  ·  configuration: claude-haiku-5-5, RAG, cell S (fictional samples (samples/transcripts))
 
 ## Answer quality  (100/100, weight 30%)
 
@@ -9,6 +9,7 @@
 | Correct answers to the sample questions **[gate]** | ≥ 100% (amber ≥ 90%) | 7/7 (100.0%) | good |
 | Questions not in the transcripts handled **[gate]** | ≥ 100% (amber ≥ 50%) | 2/2 (100.0%) | good |
 | Cross-meeting comparison correct | ≥ 100% (amber ≥ 50%) | 1/1 (100.0%) | good |
+| Held-out questions answered correctly (model-written set) | for information | 9/12 (75.0%) | info |
 
 ## Retrieval (RET-01)  (100/100, weight 15%)
 
@@ -17,16 +18,18 @@
 | Answer turns retrieved, sample transcripts **[gate]** | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (2 meetings) | good |
 | Answer turns retrieved, 60k-token transcripts | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (39 meetings) | good |
 | Answer turns retrieved, 160k-token transcripts | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (99 meetings) | good |
-| Text sent, share of full context, 160k-token transcripts | for information | 2% (about 2,912 of 114,328 tokens) | info |
+| Text sent, share of full context, 160k-token transcripts | for information | 3% (about 3,528 of 114,328 tokens) | info |
 | Not-in-the-transcripts questions ended without a call | for information | 1/2 (50.0%) ended without a call | info |
+| Held-out answer turns retrieved, sample transcripts | for information | 7/10 (70.0%) (2 meetings) | info |
+| Held-out answer turns retrieved, 160k-token transcripts with near-miss filler | for information | 6/10 (60.0%) (99 meetings, hard distractors) | info |
 
 ## Citation integrity  (100/100, weight 15%)
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 288/288 (100.0%) of 110 answers | good |
+| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 283/283 (100.0%) of 110 answers | good |
 | Answers with an invented quote or unknown citation | ≤ 1% (amber ≤ 3%) | 0/110 (0.0%) | good |
-| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 0/288 (0.0%) of citations | good |
+| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 0/283 (0.0%) of citations | good |
 | Answers with a number not in its cited turn (GR-INT-04) | ≤ 2% (amber ≤ 5%) | 1/110 (0.9%) | good |
 
 ## Operational performance  (100/100, weight 20%)
@@ -56,18 +59,25 @@
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Unit tests passing **[gate]** | ≥ 100% | 242/242 (100.0%) | good |
+| Unit tests passing **[gate]** | ≥ 100% | 262/262 (100.0%) | good |
 | Guardrail tests passing | ≥ 100% | 50/50 (100.0%) | good |
 | Install, upgrade and uninstall pass in a sandbox | yes | pass | good |
 | Dependency range bounded and changelog updated | yes | yes | good |
 
+## What this scorecard does and does not show
+
+- The 10 original questions (evals/questions.yaml) are a regression baseline on a development set: the retriever was built while looking at them, so a good score on them shows that nothing regressed, not that the app generalises.
+- The held-out rows (evals/heldout/questions.yaml) ask paraphrased questions that nothing was tuned on. That set was written by a model (Claude Code), not by a person, and is about the same two fictional calls, so a human-written held-out set on real transcripts is still the open next step. Its rows are information, not gates.
+- n is small: 10 original and 12 held-out questions, two short fictional calls (the larger sizes add synthetic filler meetings), and 30 to 100 attempts per operational row, so one question moves a percentage by 8 to 12 points.
+
 ## Evidence
 
 - Operational runs: evals/results/ops-rag-claude-haiku-5-5-S-20261025-221850.jsonl, evals/results/ops-rag-claude-haiku-5-5-M-20261025-222117.jsonl, evals/results/ops-rag-claude-haiku-5-5-L-20261025-222351.jsonl, evals/results/ops-rag-claude-haiku-5-5-XL-20261025-222511.jsonl
-- Quality eval: evals/results/quality-rag-claude-haiku-5-5-20261025-221819.json
-- Retrieval eval: evals/results/retrieval-20261025-221401.json
+- Quality eval: evals/results/quality-rag-claude-haiku-5-5-20261026-103439.json
+- Retrieval eval: evals/results/retrieval-20261026-103222.json
+- Held-out set (information only): evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json, evals/results/retrieval-heldout-20261026-103231.json, evals/results/retrieval-heldout-hard-20261026-103235.json
 - Injection probes: evals/results/probes-rag-claude-haiku-5-5-20261025-221847.json
-- Unit tests: 242/242 ok
+- Unit tests: 262/262 ok
 - Release scan: CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.
 - Install test: SANDBOX RESULT: PASS (14/14 checks)
 

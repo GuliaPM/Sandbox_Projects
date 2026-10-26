@@ -3,7 +3,7 @@
   "app": "MeetMiner",
   "version": "1.2.0",
   "engine": "full",
-  "generated": "2026-10-25T22:35:52",
+  "generated": "2026-10-26T10:40:05",
   "decision": "SHIP",
   "total": 100.0,
   "gates_failed": [],
@@ -48,6 +48,24 @@
           "rating": "green",
           "gate": false,
           "note": ""
+        },
+        {
+          "id": "heldout_quality",
+          "name": "Held-out questions answered correctly (model-written set)",
+          "target": "for information",
+          "measured": "10/12 (83.3%)",
+          "rating": "info",
+          "gate": false,
+          "note": "evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json"
+        },
+        {
+          "id": "heldout_found_s",
+          "name": "Held-out answer turns retrieved by RAG, sample transcripts (RET-01, for comparison)",
+          "target": "for information",
+          "measured": "7/10 (70.0%) (2 meetings)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
         }
       ]
     },
@@ -61,7 +79,7 @@
           "id": "verified",
           "name": "Citations verified by the checker",
           "target": "≥ 98% (amber ≥ 95%)",
-          "measured": "291/291 (100.0%) of 110 answers",
+          "measured": "289/289 (100.0%) of 110 answers",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -79,7 +97,7 @@
           "id": "weak",
           "name": "Citations pointing at the wrong turn",
           "target": "≤ 2% (amber ≤ 5%)",
-          "measured": "0/291 (0.0%) of citations",
+          "measured": "0/289 (0.0%) of citations",
           "rating": "green",
           "gate": false,
           "note": ""
@@ -283,7 +301,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "242/242 (100.0%)",
+          "measured": "262/262 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -339,10 +357,15 @@
       "evals/results/ops-claude-haiku-5-5-XL-20261025-222558.jsonl",
       "evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl"
     ],
-    "quality": "evals/results/quality-claude-haiku-5-5-20261025-003438.json",
+    "quality": "evals/results/quality-claude-haiku-5-5-20261026-103352.json",
     "probes": "evals/results/probes-claude-haiku-5-5-20261025-003607.json",
     "retrieval": null,
-    "unit_tests": "242/242 ok",
+    "heldout": [
+      "evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json",
+      "evals/results/retrieval-heldout-20261026-103231.json",
+      "evals/results/retrieval-heldout-hard-20261026-103235.json"
+    ],
+    "unit_tests": "262/262 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

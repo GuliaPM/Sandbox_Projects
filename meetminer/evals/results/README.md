@@ -8,6 +8,9 @@ contain questions, answers and numbers about the fictional sample transcripts.
 | `quality-<model>-<time>.json` | `run_eval.py` | each question's answer, citation tally, checks that failed, cost |
 | `probes-<model>-<time>.json` | `run_probes.py` | each probe's answer and whether it resisted |
 | `ops-<model>-<cell>-<time>.jsonl` | `ops_eval.py` | one line per attempt: latency, tokens, cost, failure kind, checks |
+| `retrieval-<time>.json` | `retrieval_eval.py` | RET-01 per transcript size: answer turns retrieved, text sent, traps |
+| `…-rag-…` | any of the above with `--engine rag` | the same, for the RAG engine |
+| `…-heldout-…`, `…-hard-…`, `…-pre-audit-…` | `--questions heldout/questions.yaml`, `--distractors hard`, `--synonyms pre-audit` | runs on the held-out set, the near-miss filler, or the 1.2.0 synonym list ([CONTAMINATION.md](../CONTAMINATION.md)); the scorecard never mistakes them for the default runs |
 | `superseded-...` | | a run kept for the record that a later change made out of date (see below) |
 | `_*.csv` | | the runs' scratch usage logs (not committed) |
 
@@ -24,5 +27,19 @@ Two operational runs on the sample transcripts were also superseded, both Haiku,
   showed two bugs in the numbers check (GR-INT-04): a figure followed by a colon ("$12,000:") was cut to "$12", and two
   citations joined by "and" were not treated as one. Both were fixed, with tests, and the run was repeated. Nothing was
   selected for a better result: the newest run is always the one used.
+
+The contamination audit (2026-10-26, [CONTAMINATION.md](../CONTAMINATION.md)) removed the synonyms that mirrored the eval
+questions, which made these out of date:
+
+- `superseded-retrieval-20261025-221401-pre-audit-synonyms.json` and `superseded-quality-rag-claude-haiku-5-5-20261025-221819-pre-audit-synonyms.json`:
+  RET-01 and the RAG quality eval of 1.2.0, measured with the old synonym list.
+- `superseded-retrieval-20261026-101900-pre-audit-synonyms-baseline.json`: the RET-01 baseline taken before any change
+  (same numbers as `retrieval-pre-audit-20261026-102514.json`).
+- `superseded-retrieval-*-20261026-1025*-paperwork-added.json` (four files): the first runs after the audit. The audited
+  list had wrongly given `documents` a new alternative (`paperwork`) instead of only removing entries; a test caught it,
+  it was taken out, and RET-01 was run again. The numbers were the same.
+
+`quality-claude-haiku-5-5-20261026-103352.json` is a re-run of the full-context quality eval for the held-out comparison;
+it is the newest and so the one used, and the earlier run stays as it was.
 
 The scorecard builder uses the newest file of each kind for a model and ignores files that start with `superseded-`.

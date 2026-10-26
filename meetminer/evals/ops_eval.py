@@ -5,8 +5,10 @@
     python evals/ops_eval.py --cell M --model claude-sonnet-5-5 --reps 5 --yes
     python evals/ops_eval.py --engine rag --cell XL --reps 3 --yes     the RAG engine on ~150k tokens of transcripts
     python evals/ops_eval.py --report evals/results/ops-*.jsonl     only print the statistics of earlier runs
+    python evals/ops_eval.py --questions evals/heldout/questions.yaml --distractors hard --cell L --dry-run
 
-Each repetition ("round") asks every question in evals/questions.yaml once. The first question of a round is a cold
+Each repetition ("round") asks every question in the question file (default evals/questions.yaml) once; a question
+with `follows: <id>` is asked with that question and its answer from the same round as the previous turn. The first question of a round is a cold
 call (the prompt cache has to be written) and the rest are warm calls that read it. To get a cold call without waiting
 five minutes for the cache to expire, each round puts its own random line in front of the transcripts, which makes the
 prompt new; the app itself never does this. Every attempt, including failed ones, is written to a .jsonl file in
@@ -23,8 +25,6 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-import yaml
-
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 sys.path.insert(0, str(ROOT / "src"))  # lets this run from a checkout without installing the package
@@ -32,6 +32,7 @@ sys.path.insert(0, str(HERE))
 
 import corpus  # noqa: E402
 import opsstats  # noqa: E402
+import questionset  # noqa: E402
 import run_eval  # noqa: E402
 from meetminer import engine  # noqa: E402
 from meetminer.engine import (  # noqa: E402
@@ -76,6 +77,10 @@ def main() -> int:
     parser.add_argument("--model", help="override the model for this run")
     parser.add_argument("--effort", help="override the effort for this run")
     parser.add_argument("--only", help="comma-separated question ids")
+    parser.add_argument("--questions", default=str(questionset.ORIGINAL),
+                        help="question file (default: evals/questions.yaml; held-out: evals/heldout/questions.yaml)")
+    parser.add_argument("--distractors", choices=corpus.DISTRACTORS, default="easy",
+                        help="filler for M/L/XL: easy (default, the original) or hard (near-miss facts)")
     parser.add_argument("--no-cold", action="store_true", help="do not force a cold call at the start of each round")
     parser.add_argument("--max-cost", type=float, default=2.0, help="stop when this run has cost this much (default $2)")
     parser.add_argument("--dry-run", action="store_true")
@@ -97,15 +102,14 @@ def main() -> int:
     # An isolated log, and none of the app's own limits: this run must neither read nor write the user's usage history.
     settings = replace(settings, usage_log=RESULTS / "_ops-usage.csv", max_daily_cost_usd=0, max_monthly_cost_usd=0,
                        max_session_cost_usd=1e9)
-    questions = yaml.safe_load((HERE / "questions.yaml").read_text(encoding="utf-8"))
-    if args.only:
-        questions = [q for q in questions if q["id"] in set(args.only.split(","))]
+    questions = questionset.only(questionset.load(args.questions), args.only)
+    qset = questionset.label(args.questions)
 
     def measure(folder: Path) -> int:
         probe = MeetingQA(replace(settings, transcripts_dir=folder), load_meetings(folder).meetings)
         return probe.count_corpus_tokens()[0]
 
-    folder = corpus.build_cell(args.cell, Path(__file__).resolve().parent / "_cache", measure)
+    folder = corpus.build_cell(args.cell, Path(__file__).resolve().parent / "_cache", measure, args.distractors)
     settings = replace(settings, transcripts_dir=folder)
     loaded = load_meetings(folder)
     qa = MeetingQA(settings, loaded.meetings, CostTracker(settings))
@@ -115,7 +119,8 @@ def main() -> int:
     else:
         low, high = estimate(args.reps, len(questions), tokens, settings.prices)
     attempts = args.reps * len(questions)
-    print(f"OPS-01: {attempts} attempts ({args.reps} rounds x {len(questions)} questions) on {settings.model} "
+    print(f"OPS-01: {attempts} attempts ({args.reps} rounds x {len(questions)} {qset} questions, {args.distractors} "
+          f"distractors) on {settings.model} "
           f"(effort {settings.effort}), engine {settings.engine}, cell {args.cell}: {len(loaded.meetings)} meetings, "
           f"{tokens:,} prompt tokens with full context ({how}).")
     print(f"Estimated cost: ${low:.4f} to ${high:.4f}   (this run stops at ${args.max_cost:.2f})")
@@ -133,12 +138,15 @@ def main() -> int:
     engine.get_context = _round_context  # the app's own prompt builder, with the cold-call line added
     run_id = uuid.uuid4().hex[:8]
     kind = "ops-rag" if settings.engine == "rag" else "ops"  # full context keeps the original file names
+    extra = "-".join(p for p in (qset if qset != "original" else "", "hard" if args.distractors == "hard" else "") if p)
+    kind += f"-{extra}" if extra else ""  # e.g. ops-rag-heldout-hard-<model>-...: never mistaken for the default runs
     out = Path(args.out) if args.out else RESULTS / f"{kind}-{settings.model}-{args.cell}-{datetime.now():%Y%m%d-%H%M%S}.jsonl"
     rows: list[dict] = []
     stopped = False
     with out.open("w", encoding="utf-8") as sink:
         for rnd in range(1, args.reps + 1):
             ROUND["nonce"] = "" if args.no_cold and rnd > 1 else uuid.uuid4().hex[:8]
+            asked: dict[str, tuple[str, str]] = {}
             for idx, q in enumerate(questions):
                 if qa.tracker.total >= args.max_cost:
                     stopped = True
@@ -147,14 +155,16 @@ def main() -> int:
                 if settings.engine == "rag":
                     intended = "uncached"  # RAG sends different excerpts each time, so there is no cache to be warm
                 started = time.perf_counter()
-                ans = qa.ask(q["question"], [])
+                ans = qa.ask(q["question"], questionset.history_for(q, asked))
                 wall = time.perf_counter() - started
+                asked[q["id"]] = (q["question"], ans.text)
                 checks = run_eval.judge(q, ans, qa)
                 ok = not ans.error
                 row = {
                     "run_id": run_id, "ts": datetime.now().isoformat(timespec="seconds"), "model": settings.model,
                     "engine": settings.engine,
                     "effort": settings.effort, "cell": args.cell, "corpus_tokens": tokens, "round": rnd,
+                    "questions_set": qset, "distractors": args.distractors,
                     "question_id": q["id"], "kind": q.get("kind", ""), "cache_state": intended,
                     "cache_observed": "warm" if ans.tokens["cache_read"] > 0 else "cold", "ok": ok,
                     "failure_kind": ans.error_kind if ans.error else "", "error": ans.error,

@@ -9,6 +9,9 @@ Evidence, newest file wins:
   evals/results/ops-<model>-S-*.jsonl   from evals/ops_eval.py   (also -M- and -L- for the information rows)
   evals/results/quality-<model>-*.json  from evals/run_eval.py
   evals/results/probes-<model>-*.json   from evals/run_probes.py
+  evals/results/retrieval-*.json        from evals/retrieval_eval.py (RAG; chosen by the question set and filler recorded
+                                        in the file, so held-out and hard-distractor runs never replace the default one)
+  evals/results/quality-heldout-<model>-*.json and the held-out RET-01 runs, for the held-out information rows
   the unit tests (run here), the release scan (packaging/export_public.py), the install test (packaging/sandbox_test.ps1)
 What is measured, and what counts as good, is in scorecard.spec.yaml. A metric with no evidence is "not measured" and scores 0.
 """
@@ -69,11 +72,27 @@ class Evidence:
     engine: str = "full"
     retrieval: dict | None = None  # RAG: evals/retrieval_eval.py results
     retrieval_file: str = ""
+    # The frozen held-out set (evals/heldout/questions.yaml): information only, never a gate yet.
+    heldout_quality: dict | None = None
+    heldout_quality_file: str = ""
+    heldout_retrieval: dict = field(default_factory=dict)  # distractors ("easy" | "hard") -> retrieval_eval.py results
+    heldout_retrieval_files: list = field(default_factory=list)
 
 
 def newest(pattern: str) -> Path | None:
     files = sorted(RESULTS.glob(pattern), key=lambda p: p.stat().st_mtime)
     return files[-1] if files else None
+
+
+def newest_retrieval(questions_set: str = "original", distractors: str = "easy") -> Path | None:
+    """The newest RET-01 result for this question set and filler, with the current synonym list. Files written before
+    these fields existed count as the original questions, easy filler, and the synonyms of their time."""
+    for path in sorted(RESULTS.glob("retrieval-*.json"), key=lambda p: p.stat().st_mtime, reverse=True):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if (data.get("questions_set", "original"), data.get("distractors", "easy"),
+                data.get("synonyms", "current")) == (questions_set, distractors, "current"):
+            return path
+    return None
 
 
 def rel(path: Path) -> str:
@@ -165,9 +184,17 @@ def gather(spec: dict, args) -> Evidence:
     p = Path(args.probes) if args.probes else newest(f"{kind('probes', engine)}-{model}-*.json")
     if p and p.is_file():
         ev.probes, ev.probes_file = json.loads(p.read_text(encoding="utf-8")), rel(p)
-    r = newest("retrieval-*.json") if engine == "rag" else None
+    r = newest_retrieval() if engine == "rag" else None
     if r:
         ev.retrieval, ev.retrieval_file = json.loads(r.read_text(encoding="utf-8")), rel(r)
+    hq = newest(f"{kind('quality', engine)}-heldout-{model}-*.json")
+    if hq:
+        ev.heldout_quality, ev.heldout_quality_file = json.loads(hq.read_text(encoding="utf-8")), rel(hq)
+    for distractors in ("easy", "hard"):
+        hr = newest_retrieval("heldout", distractors)
+        if hr:
+            ev.heldout_retrieval[distractors] = json.loads(hr.read_text(encoding="utf-8"))
+            ev.heldout_retrieval_files.append(rel(hr))
     if not args.skip_tests:
         print("running the unit tests...", flush=True)
         ev.tests = run_unit_tests()
@@ -308,6 +335,18 @@ def measure(source: str, ev: Evidence) -> Measure | None:
                                   f"{r['full_context_tokens_est']:,} tokens)", ev.retrieval_file)
         if metric == "traps":
             return _ratio(r["traps_without_a_call"], r["traps"], " ended without a call")
+    if kind == "heldout":
+        if what == "quality" and ev.heldout_quality:
+            out = ev.heldout_quality["outcomes"]
+            m = _ratio(sum(o["passed"] for o in out), len(out))
+            return Measure(m.value, m.shown, ev.heldout_quality_file) if m else None
+        if what.startswith("found_"):  # found_S, found_XL_hard
+            cell, _, distractors = what[len("found_"):].partition("_")
+            r = ev.heldout_retrieval.get(distractors or "easy", {}).get("cells", {}).get(cell)
+            if r is None:
+                return None
+            label = f" ({r['meetings']} meetings{', hard distractors' if distractors == 'hard' else ''})"
+            return _ratio(r["all_answer_turns_found"], r["questions"], label)
     if kind == "probes" and ev.probes:
         misses = ev.probes["probes"] - ev.probes["resisted"]
         return Measure(misses, f"{ev.probes['resisted']}/{ev.probes['probes']} resisted", ev.probes_file)
@@ -415,6 +454,7 @@ def build(spec: dict, ev: Evidence) -> dict:
         "dimensions": dimensions, "notes": notes, "guardrails": spec.get("guardrails", []),
         "evidence": {"ops": ev.ops_files, "quality": ev.quality_file, "probes": ev.probes_file,
                      "retrieval": ev.retrieval_file or None,
+                     "heldout": [f for f in [ev.heldout_quality_file, *ev.heldout_retrieval_files] if f] or None,
                      "unit_tests": None if ev.tests is None else f"{sum(v == 'ok' for v in ev.tests.values())}/{len(ev.tests)} ok",
                      "scan": ev.scan[1] if ev.scan else None, "sandbox": ev.sandbox[1] if ev.sandbox else None},
     }
@@ -428,6 +468,17 @@ def other_model_notes(ev: Evidence) -> list[str]:
         notes.append(f"{g.model}, cell {g.cell} ({g.corpus_tokens:,} tokens, {g.attempts} attempts): p95 {opsstats.fmt_s(g.p95)}, "
                      f"failure rate {opsstats.fmt_pct(g.failure_rate)}, {opsstats.fmt_usd(g.cost_per_success)} per successful task.")
     return notes
+
+
+LIMITS = [
+    "The 10 original questions (evals/questions.yaml) are a regression baseline on a development set: the retriever was "
+    "built while looking at them, so a good score on them shows that nothing regressed, not that the app generalises.",
+    "The held-out rows (evals/heldout/questions.yaml) ask paraphrased questions that nothing was tuned on. That set was "
+    "written by a model (Claude Code), not by a person, and is about the same two fictional calls, so a human-written "
+    "held-out set on real transcripts is still the open next step. Its rows are information, not gates.",
+    "n is small: 10 original and 12 held-out questions, two short fictional calls (the larger sizes add synthetic filler "
+    "meetings), and 30 to 100 attempts per operational row, so one question moves a percentage by 8 to 12 points.",
+]
 
 
 def markdown(card: dict) -> str:
@@ -446,11 +497,14 @@ def markdown(card: dict) -> str:
         for m in d["metrics"]:
             lines.append(f"| {m['name']}{' **[gate]**' if m['gate'] else ''} | {m['target']} | {m['measured']} | {RATING_TEXT[m['rating']]} |")
         lines.append("")
+    lines += ["## What this scorecard does and does not show", "", *[f"- {s}" for s in LIMITS], ""]
     lines += ["## Evidence", ""]
     ev = card["evidence"]
     lines += [f"- Operational runs: {', '.join(ev['ops']) or 'none'}", f"- Quality eval: {ev['quality'] or 'none'}"]
     if ev.get("retrieval"):
         lines.append(f"- Retrieval eval: {ev['retrieval']}")
+    if ev.get("heldout"):
+        lines.append(f"- Held-out set (information only): {', '.join(ev['heldout'])}")
     lines += [
               f"- Injection probes: {ev['probes'] or 'none'}", f"- Unit tests: {ev['unit_tests'] or 'not run'}",
               f"- Release scan: {ev['scan'] or 'not run'}", f"- Install test: {ev['sandbox'] or 'not run'}", ""]

@@ -1,0 +1,270 @@
+{
+  "suite": "quality",
+  "engine": "rag",
+  "model": "claude-haiku-5-5",
+  "effort": "low",
+  "questions_set": "original",
+  "run_at": "2026-10-26T10:34:39",
+  "questions": 10,
+  "passed": 10,
+  "cost_usd": 0.003459,
+  "outcomes": [
+    {
+      "id": "launch-date",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000425,
+      "answer": "The launch was moved to November 14th. The original date was October 24th, but the payment provider integration was behind, and Marcos said it couldn't be tested properly before then. Speaker 1 proposed the new date, which gives three weeks of buffer.\n\n[Product planning call, Speaker 1, 00:00]\n\nSpeaker 2 (Marcus in the transcript, by name address) later said November 14th was realistic but that he would not go earlier. The payment integration delay came from the provider changing its sandbox, which cost about four days.\n\n[Product planning call, Speaker 2, 01:35]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 3,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 18,
+        "tokens_estimate": 1746,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "qa-budget",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000278,
+      "answer": "The transcript supports $18,000 for QA contractor help, up from an original $12,000. Speaker 1 said the schedule moved and a second tester was needed, so they asked for $18,000, and said finance was okay with it as long as spending stayed under that number [Product planning call, Speaker 1, 00:00]. In the action-item summary, Speaker 1 again said \"the budget is $18,000\" [Product planning call, Speaker 1, 06:30].\n\nNote that the excerpts show finance's agreement as a condition on the request, not a formal approval record.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 4,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 6,
+        "tokens_estimate": 756,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "beta-group",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000461,
+      "answer": "The beta is 25 customers, and the invitations go out on November 3rd.\n\n- Beta size: Speaker 1 said, \"I'd like to invite 25 customers and send the invites on November 3rd\" [Product planning call, Speaker 1, 00:00]. In the closing summary, Speaker 1 also said, \"the beta is 25 customers\" [Product planning call, Speaker 1, 06:30].\n- Invitation date: the same line gives November 3rd [Product planning call, Speaker 1, 00:00]. Speaker 4 also refers to the invites going out \"on the 3rd\" [Product planning call, Speaker 4, 04:10].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 22,
+        "tokens_estimate": 1938,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "api-spec-owner",
+      "kind": "commitment",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000429,
+      "answer": "Marcus owns the API spec, and it is due October 30th.\n\nIn the Product planning call, Speaker 2 (who is addressed as Marcus by Speaker 1) said: \"What I need is a clear API spec, and I can deliver the first complete version of the API spec by October 30th.\" [Product planning call, Speaker 2, 01:35]\n\nSpeaker 1 confirmed the action item later in the call: \"Marcus delivers the API spec by October 30th and builds the rollback switch before launch.\" [Product planning call, Speaker 1, 06:30]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 3,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 20,
+        "tokens_estimate": 1831,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "planning-actions",
+      "kind": "commitment",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000416,
+      "answer": "At the end of the call, Speaker 1 summarised the action items at [Product planning call, Speaker 1, 06:30]:\n\n- **Speaker 1 (Priya, per the dana question):** will send the final scope document by Friday.\n- **Marcus:** deliver the API spec by October 30th, and build the rollback switch before launch.\n- **Dana:** finish the mockups by November 1st.\n- **Leo:** draft the beta announcement email by November 2nd and brief support.\n- **Second tester:** starts November 4th.\n\nNote that the transcript spells the name \"Marcos\" in Speaker 1's opening turn ([Product planning call, Speaker 1, 00:00]) and \"Marcus\" elsewhere; I've used \"Marcus\" for the person who gave the integration update and was asked to do the tasks.\n\nAlso, Speaker 1 is addressed as \"Priya\" in the transcript only through Speaker 3's remark at [Product planning call, Speaker 3, 03:05], so that identification is inferred from that line.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 4,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 14,
+        "tokens_estimate": 1196,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "seat-pricing",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000244,
+      "answer": "The price is $25 per seat per month, which is $1,000 a month for the starting 40 seats, or $12,000 a year. Prepaying for the full year gives a 10% discount, bringing it to $10,800.\n\n[Customer onboarding call, Speaker 1, 00:00]",
+      "error": "",
+      "citations": [
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 6,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 10,
+        "tokens_estimate": 774,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "security-documents",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000464,
+      "answer": "The customer asked for two documents before signing, both from the Customer onboarding call:\n\n- A SOC 2 Type II report. Sam (finance) said, \"We need your SOC 2 Type II report, and we need a data processing agreement, because the shipment data includes customer addresses.\" [Customer onboarding call, Speaker 3, 02:15]\n- A data processing agreement, for the same reason: the shipment data includes customer addresses. [Customer onboarding call, Speaker 3, 02:15]\n\nSam also said that finance and security both have to review before any signature. [Customer onboarding call, Speaker 3, 02:15] Alex (the account manager) agreed to send both documents by Wednesday. [Customer onboarding call, Speaker 1, 03:00]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 2,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 20,
+        "tokens_estimate": 1780,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "cross-meeting",
+      "kind": "comparison",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000426,
+      "answer": "The customer onboarding call discussed a security document, and the product planning call discussed a QA budget.\n\n- **Security document:** In the customer onboarding call, Sam from finance asked for the SOC 2 Type II report before signing: \"We need your SOC 2 Type II report, and we need a data processing agreement\" [Customer onboarding call, Speaker 3, 02:15]. Alex (Speaker 1) agreed to send both by Wednesday [Customer onboarding call, Speaker 1, 03:00].\n- **QA budget:** In the product planning call, Speaker 1 said the original budget for contractor help on QA was $12,000, and they were asking for $18,000 because a second tester was needed [Product planning call, Speaker 1, 00:00]. Speaker 1 later confirmed the budget was $18,000 in the action items [Product planning call, Speaker 1, 06:30].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 5,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 18,
+        "tokens_estimate": 1365,
+        "answer_turns_found": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "id": "trap-competitor",
+      "kind": "not_in_data",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000318,
+      "answer": "Not found in the transcripts. I looked for any mention of a customer comparing a competitor product. The only excerpt from the \"Customer onboarding call\" is a single line from Speaker 3 at 06:52 that says \"Thanks everyone,\" and the \"Product planning call\" discusses project scope, payments, and beta plans, with no competitor products named. The rest of the onboarding call is not shown, so the answer may be in turns that were not included.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 14,
+        "tokens_estimate": 1173,
+        "answer_turns_found": []
+      }
+    },
+    {
+      "id": "trap-kubernetes",
+      "kind": "not_in_data",
+      "follows": null,
+      "passed": true,
+      "cost": 0.0,
+      "answer": "Not found in the transcripts. No passage matched the words in your question, so nothing was sent to Claude. Try other words, or switch to Full context.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 0,
+        "tokens_estimate": 0,
+        "answer_turns_found": []
+      }
+    }
+  ]
+}

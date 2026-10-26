@@ -1,0 +1,597 @@
+{
+  "suite": "RET-01",
+  "engine": "rag",
+  "run_at": "2026-10-26T10:25:24",
+  "questions_set": "original",
+  "questions_file": "evals/questions.yaml",
+  "distractors": "hard",
+  "synonyms": "pre-audit",
+  "synonyms_fingerprint": "8b4d3b6f759d",
+  "settings": {
+    "rag_top_k": 12,
+    "rag_neighbors": 1,
+    "rag_max_tokens": 6000
+  },
+  "cells": {
+    "S": {
+      "meetings": 2,
+      "chunks": 32,
+      "full_context_tokens_est": 2810,
+      "questions": 8,
+      "all_answer_turns_found": 8,
+      "any_answer_turn_found": 8,
+      "answer_turn_recall": 1.0,
+      "avg_tokens_sent_est": 2014,
+      "max_tokens_sent_est": 2523,
+      "share_of_full_context": 0.717,
+      "traps": 2,
+      "traps_without_a_call": 1,
+      "index_build_ms": 1.5,
+      "avg_retrieval_ms": 0.25,
+      "per_question": [
+        {
+          "id": "launch-date",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1746,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "qa-budget",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 6,
+          "meetings": 1,
+          "tokens_estimate": 756,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "beta-group",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 22,
+          "meetings": 2,
+          "tokens_estimate": 1938,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "api-spec-owner",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 20,
+          "meetings": 2,
+          "tokens_estimate": 1831,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "planning-actions",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 14,
+          "meetings": 1,
+          "tokens_estimate": 1196,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "seat-pricing",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 10,
+          "meetings": 1,
+          "tokens_estimate": 774,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "security-documents",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1764,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "cross-meeting",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 22,
+          "meetings": 2,
+          "tokens_estimate": 1683,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "trap-competitor",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 14,
+          "meetings": 2,
+          "tokens_estimate": 1173,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "trap-kubernetes",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 0,
+          "meetings": 0,
+          "tokens_estimate": 0,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": true
+        }
+      ]
+    },
+    "M": {
+      "meetings": 9,
+      "chunks": 107,
+      "full_context_tokens_est": 10987,
+      "questions": 8,
+      "all_answer_turns_found": 8,
+      "any_answer_turn_found": 8,
+      "answer_turn_recall": 1.0,
+      "avg_tokens_sent_est": 3394,
+      "max_tokens_sent_est": 4423,
+      "share_of_full_context": 0.309,
+      "traps": 2,
+      "traps_without_a_call": 1,
+      "index_build_ms": 7.7,
+      "avg_retrieval_ms": 0.5,
+      "per_question": [
+        {
+          "id": "launch-date",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 26,
+          "meetings": 7,
+          "tokens_estimate": 3115,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "qa-budget",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 25,
+          "meetings": 6,
+          "tokens_estimate": 3121,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "beta-group",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 22,
+          "meetings": 3,
+          "tokens_estimate": 2047,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "api-spec-owner",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 34,
+          "meetings": 8,
+          "tokens_estimate": 3510,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "planning-actions",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 22,
+          "meetings": 6,
+          "tokens_estimate": 2439,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "seat-pricing",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 28,
+          "meetings": 7,
+          "tokens_estimate": 3234,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "security-documents",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 29,
+          "meetings": 8,
+          "tokens_estimate": 2912,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "cross-meeting",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 31,
+          "meetings": 9,
+          "tokens_estimate": 3838,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "trap-competitor",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 14,
+          "meetings": 2,
+          "tokens_estimate": 1063,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "trap-kubernetes",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 0,
+          "meetings": 0,
+          "tokens_estimate": 0,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": true
+        }
+      ]
+    },
+    "L": {
+      "meetings": 39,
+      "chunks": 428,
+      "full_context_tokens_est": 45700,
+      "questions": 8,
+      "all_answer_turns_found": 8,
+      "any_answer_turn_found": 8,
+      "answer_turn_recall": 1.0,
+      "avg_tokens_sent_est": 4869,
+      "max_tokens_sent_est": 6538,
+      "share_of_full_context": 0.107,
+      "traps": 2,
+      "traps_without_a_call": 1,
+      "index_build_ms": 107.3,
+      "avg_retrieval_ms": 4.59,
+      "per_question": [
+        {
+          "id": "launch-date",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 47,
+          "meetings": 24,
+          "tokens_estimate": 5697,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "qa-budget",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 37,
+          "meetings": 17,
+          "tokens_estimate": 4798,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "beta-group",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1890,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "api-spec-owner",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 50,
+          "meetings": 26,
+          "tokens_estimate": 5953,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "planning-actions",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 32,
+          "meetings": 19,
+          "tokens_estimate": 3605,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "seat-pricing",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 49,
+          "meetings": 25,
+          "tokens_estimate": 5784,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "security-documents",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 37,
+          "meetings": 17,
+          "tokens_estimate": 3809,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "cross-meeting",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 49,
+          "meetings": 25,
+          "tokens_estimate": 5953,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "trap-competitor",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 14,
+          "meetings": 2,
+          "tokens_estimate": 1063,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "trap-kubernetes",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 0,
+          "meetings": 0,
+          "tokens_estimate": 0,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": true
+        }
+      ]
+    },
+    "XL": {
+      "meetings": 99,
+      "chunks": 1065,
+      "full_context_tokens_est": 115495,
+      "questions": 8,
+      "all_answer_turns_found": 8,
+      "any_answer_turn_found": 8,
+      "answer_turn_recall": 1.0,
+      "avg_tokens_sent_est": 5203,
+      "max_tokens_sent_est": 6584,
+      "share_of_full_context": 0.045,
+      "traps": 2,
+      "traps_without_a_call": 1,
+      "index_build_ms": 553.0,
+      "avg_retrieval_ms": 9.53,
+      "per_question": [
+        {
+          "id": "launch-date",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 52,
+          "meetings": 31,
+          "tokens_estimate": 5963,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "qa-budget",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 52,
+          "meetings": 32,
+          "tokens_estimate": 5992,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "beta-group",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1890,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "api-spec-owner",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 56,
+          "meetings": 33,
+          "tokens_estimate": 5996,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "planning-actions",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 39,
+          "meetings": 26,
+          "tokens_estimate": 4163,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "seat-pricing",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 56,
+          "meetings": 34,
+          "tokens_estimate": 5918,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "security-documents",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 45,
+          "meetings": 28,
+          "tokens_estimate": 4574,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "cross-meeting",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 49,
+          "meetings": 27,
+          "tokens_estimate": 5999,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "trap-competitor",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 14,
+          "meetings": 2,
+          "tokens_estimate": 1063,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "trap-kubernetes",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 0,
+          "meetings": 0,
+          "tokens_estimate": 0,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": true
+        }
+      ]
+    }
+  }
+}

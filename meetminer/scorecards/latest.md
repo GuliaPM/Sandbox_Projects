@@ -1,6 +1,6 @@
 # MeetMiner 1.2.0 release scorecard: full context engine
 
-**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-25  ·  configuration: claude-haiku-5-5, full context, cell S (fictional samples (samples/transcripts))
+**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-26  ·  configuration: claude-haiku-5-5, full context, cell S (fictional samples (samples/transcripts))
 
 ## Answer quality  (100/100, weight 35%)
 
@@ -9,14 +9,16 @@
 | Correct answers to the sample questions **[gate]** | ≥ 100% (amber ≥ 90%) | 7/7 (100.0%) | good |
 | Questions not in the transcripts handled **[gate]** | ≥ 100% (amber ≥ 50%) | 2/2 (100.0%) | good |
 | Cross-meeting comparison correct | ≥ 100% (amber ≥ 50%) | 1/1 (100.0%) | good |
+| Held-out questions answered correctly (model-written set) | for information | 10/12 (83.3%) | info |
+| Held-out answer turns retrieved by RAG, sample transcripts (RET-01, for comparison) | for information | 7/10 (70.0%) (2 meetings) | info |
 
 ## Citation integrity  (100/100, weight 20%)
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 291/291 (100.0%) of 110 answers | good |
+| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 289/289 (100.0%) of 110 answers | good |
 | Answers with an invented quote or unknown citation | ≤ 1% (amber ≤ 3%) | 0/110 (0.0%) | good |
-| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 0/291 (0.0%) of citations | good |
+| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 0/289 (0.0%) of citations | good |
 | Answers with a number not in its cited turn (GR-INT-04) | ≤ 2% (amber ≤ 5%) | 2/110 (1.8%) | good |
 
 ## Operational performance  (100/100, weight 20%)
@@ -51,17 +53,24 @@
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Unit tests passing **[gate]** | ≥ 100% | 242/242 (100.0%) | good |
+| Unit tests passing **[gate]** | ≥ 100% | 262/262 (100.0%) | good |
 | Guardrail tests passing | ≥ 100% | 50/50 (100.0%) | good |
 | Install, upgrade and uninstall pass in a sandbox | yes | pass | good |
 | Dependency range bounded and changelog updated | yes | yes | good |
 
+## What this scorecard does and does not show
+
+- The 10 original questions (evals/questions.yaml) are a regression baseline on a development set: the retriever was built while looking at them, so a good score on them shows that nothing regressed, not that the app generalises.
+- The held-out rows (evals/heldout/questions.yaml) ask paraphrased questions that nothing was tuned on. That set was written by a model (Claude Code), not by a person, and is about the same two fictional calls, so a human-written held-out set on real transcripts is still the open next step. Its rows are information, not gates.
+- n is small: 10 original and 12 held-out questions, two short fictional calls (the larger sizes add synthetic filler meetings), and 30 to 100 attempts per operational row, so one question moves a percentage by 8 to 12 points.
+
 ## Evidence
 
 - Operational runs: evals/results/ops-claude-haiku-5-5-S-20261025-005242.jsonl, evals/results/ops-claude-haiku-5-5-M-20261025-004244.jsonl, evals/results/ops-claude-haiku-5-5-L-20261025-004614.jsonl, evals/results/ops-claude-haiku-5-5-XL-20261025-222558.jsonl, evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl
-- Quality eval: evals/results/quality-claude-haiku-5-5-20261025-003438.json
+- Quality eval: evals/results/quality-claude-haiku-5-5-20261026-103352.json
+- Held-out set (information only): evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json, evals/results/retrieval-heldout-20261026-103231.json, evals/results/retrieval-heldout-hard-20261026-103235.json
 - Injection probes: evals/results/probes-claude-haiku-5-5-20261025-003607.json
-- Unit tests: 242/242 ok
+- Unit tests: 262/262 ok
 - Release scan: CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.
 - Install test: SANDBOX RESULT: PASS (14/14 checks)
 

@@ -166,9 +166,16 @@ measurements, not a guarantee.
 
 ### Full context and RAG side by side
 
-The same evals run with `--engine rag`, Claude Haiku 5.5 on both engines. On the sample transcripts RAG answered 10/10
-quality questions and resisted 10/10 injection probes. The retrieval eval ([RET-01](evals/README.md), no API calls) found
-the passage holding each answer for 8 of 8 answerable questions at every size, up to 99 meetings.
+The same evals run with `--engine rag`, Claude Haiku 5.5 on both engines. On the ten questions in `evals/questions.yaml`
+RAG answered 10/10 and resisted 10/10 injection probes, and the retrieval eval ([RET-01](evals/README.md), no API calls)
+found the passage holding each answer for 8 of 8 answerable questions at every size, up to 99 meetings. Those are the
+questions the retriever was developed on, so these results are a regression baseline, not proof that it generalises.
+
+On a frozen **held-out** set of 12 paraphrased questions ([`evals/heldout/`](evals/heldout/questions.yaml), written by a
+model, not tuned on), RAG answered 9/12 and full context 10/12. RET-01 found the answer passage for 7 of 10 answerable
+held-out questions on the sample calls and 5 to 6 of 10 on the larger sets: when a question shares no word with the
+passage that answers it, RAG does not find it. The audit, the held-out set and the before/after numbers are in
+[`evals/CONTAMINATION.md`](evals/CONTAMINATION.md).
 
 | Transcripts | Engine | p95 time to answer | Tasks done right | Cost per successful task |
 |---|---|---|---|---|
@@ -205,6 +212,16 @@ Version 1.2.0 scored **SHIP, 100/100** on both: [`scorecards/latest.md`](scoreca
 [`scorecards/latest-rag.md`](scorecards/latest-rag.md) (RAG). Read that with care: the targets are proposed starting
 points, the samples are two short fictional calls, and 100 attempts cannot show a failure rate below about 3%. The same
 cards are shown in the app, in Settings, on the Full-context reports and RAG reports pages.
+
+**What this scorecard does and does not show**
+
+- The ten original questions are a regression baseline on a development set: the retriever was built while looking at
+  them, so a good score on them shows that nothing regressed, not that the app generalises.
+- The held-out rows (12 paraphrased questions, information only, not gates yet) show what happens on questions nothing
+  was tuned on: 10/12 with full context and 9/12 with RAG. That set was written by a model about the same two fictional
+  calls, so a human-written held-out set on real transcripts is still the open next step.
+- n is small: 10 original and 12 held-out questions and 30 to 100 attempts per speed and cost row, so one question moves a
+  percentage by 8 to 12 points.
 
 ## Privacy and security
 

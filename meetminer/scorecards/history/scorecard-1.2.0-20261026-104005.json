@@ -1,0 +1,372 @@
+{
+  "schema": 1,
+  "app": "MeetMiner",
+  "version": "1.2.0",
+  "engine": "full",
+  "generated": "2026-10-26T10:40:05",
+  "decision": "SHIP",
+  "total": 100.0,
+  "gates_failed": [],
+  "gates_unmeasured": [],
+  "unmeasured": [],
+  "config": {
+    "model": "claude-haiku-5-5",
+    "engine": "full",
+    "cell": "S",
+    "transcripts": "fictional samples (samples/transcripts)"
+  },
+  "dimensions": [
+    {
+      "id": "quality",
+      "name": "Answer quality",
+      "weight": 35,
+      "score": 100.0,
+      "metrics": [
+        {
+          "id": "correct_answers",
+          "name": "Correct answers to the sample questions",
+          "target": "≥ 100% (amber ≥ 90%)",
+          "measured": "7/7 (100.0%)",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "not_found",
+          "name": "Questions not in the transcripts handled",
+          "target": "≥ 100% (amber ≥ 50%)",
+          "measured": "2/2 (100.0%)",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "cross_meeting",
+          "name": "Cross-meeting comparison correct",
+          "target": "≥ 100% (amber ≥ 50%)",
+          "measured": "1/1 (100.0%)",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "heldout_quality",
+          "name": "Held-out questions answered correctly (model-written set)",
+          "target": "for information",
+          "measured": "10/12 (83.3%)",
+          "rating": "info",
+          "gate": false,
+          "note": "evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json"
+        },
+        {
+          "id": "heldout_found_s",
+          "name": "Held-out answer turns retrieved by RAG, sample transcripts (RET-01, for comparison)",
+          "target": "for information",
+          "measured": "7/10 (70.0%) (2 meetings)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "citations",
+      "name": "Citation integrity",
+      "weight": 20,
+      "score": 100.0,
+      "metrics": [
+        {
+          "id": "verified",
+          "name": "Citations verified by the checker",
+          "target": "≥ 98% (amber ≥ 95%)",
+          "measured": "289/289 (100.0%) of 110 answers",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "bad_answers",
+          "name": "Answers with an invented quote or unknown citation",
+          "target": "≤ 1% (amber ≤ 3%)",
+          "measured": "0/110 (0.0%)",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "weak",
+          "name": "Citations pointing at the wrong turn",
+          "target": "≤ 2% (amber ≤ 5%)",
+          "measured": "0/289 (0.0%) of citations",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "numbers",
+          "name": "Answers with a number not in its cited turn (GR-INT-04)",
+          "target": "≤ 2% (amber ≤ 5%)",
+          "measured": "2/110 (1.8%)",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "ops",
+      "name": "Operational performance",
+      "weight": 20,
+      "score": 100.0,
+      "metrics": [
+        {
+          "id": "p95_warm",
+          "name": "p95 latency, cache warm",
+          "target": "≤ 8 s (amber ≤ 15 s)",
+          "measured": "3.78 s",
+          "rating": "green",
+          "gate": false,
+          "note": "n=90"
+        },
+        {
+          "id": "p95_cold",
+          "name": "p95 latency, cache cold",
+          "target": "≤ 15 s (amber ≤ 25 s)",
+          "measured": "3.36 s",
+          "rating": "green",
+          "gate": false,
+          "note": "n=10"
+        },
+        {
+          "id": "failure_rate",
+          "name": "Failure rate (outside the person's control)",
+          "target": "≤ 1% (amber ≤ 3%)",
+          "measured": "0.0% of 100 (95% upper bound 3.7%)",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "task_success",
+          "name": "Tasks done right (answered, correct, cited)",
+          "target": "≥ 98% (amber ≥ 95%)",
+          "measured": "99/100 (99.0%)",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "cost_per_success",
+          "name": "Cost per successful task",
+          "target": "≤ $0.0005 (amber ≤ $0.001)",
+          "measured": "$0.00023",
+          "rating": "green",
+          "gate": false,
+          "note": "$0.0232 over 100 attempts"
+        },
+        {
+          "id": "p95_warm_m",
+          "name": "p95 latency, cache warm, 15k-token transcripts",
+          "target": "for information",
+          "measured": "4.82 s",
+          "rating": "info",
+          "gate": false,
+          "note": "n=90"
+        },
+        {
+          "id": "p95_warm_l",
+          "name": "p95 latency, cache warm, 60k-token transcripts",
+          "target": "for information",
+          "measured": "5.77 s",
+          "rating": "info",
+          "gate": false,
+          "note": "n=45"
+        },
+        {
+          "id": "cost_m",
+          "name": "Cost per successful task, 15k-token transcripts",
+          "target": "for information",
+          "measured": "$0.00051",
+          "rating": "info",
+          "gate": false,
+          "note": "$0.0481 over 100 attempts"
+        },
+        {
+          "id": "cost_l",
+          "name": "Cost per successful task, 60k-token transcripts",
+          "target": "for information",
+          "measured": "$0.00158",
+          "rating": "info",
+          "gate": false,
+          "note": "$0.0773 over 50 attempts"
+        },
+        {
+          "id": "success_m",
+          "name": "Tasks done right, 15k-token transcripts",
+          "target": "for information",
+          "measured": "94/100 (94.0%)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "success_l",
+          "name": "Tasks done right, 60k-token transcripts",
+          "target": "for information",
+          "measured": "49/50 (98.0%)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "p95_warm_xl",
+          "name": "p95 latency, cache warm, 160k-token transcripts",
+          "target": "for information",
+          "measured": "6.83 s",
+          "rating": "info",
+          "gate": false,
+          "note": "n=27"
+        },
+        {
+          "id": "cost_xl",
+          "name": "Cost per successful task, 160k-token transcripts",
+          "target": "for information",
+          "measured": "$0.00405",
+          "rating": "info",
+          "gate": false,
+          "note": "$0.1093 over 30 attempts"
+        },
+        {
+          "id": "success_xl",
+          "name": "Tasks done right, 160k-token transcripts",
+          "target": "for information",
+          "measured": "27/30 (90.0%)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "safety",
+      "name": "Safety and privacy",
+      "weight": 15,
+      "score": 100.0,
+      "metrics": [
+        {
+          "id": "scan",
+          "name": "Release scan finds nothing private",
+          "target": "yes",
+          "measured": "clean",
+          "rating": "green",
+          "gate": true,
+          "note": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files."
+        },
+        {
+          "id": "key_encrypted",
+          "name": "API key stored encrypted and never shown in full",
+          "target": "yes",
+          "measured": "yes",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "injection",
+          "name": "Prompt-injection probes that failed (GR-INJ-03)",
+          "target": "≤ 0 (amber ≤ 1)",
+          "measured": "10/10 resisted",
+          "rating": "green",
+          "gate": true,
+          "note": "evals/results/probes-claude-haiku-5-5-20261025-003607.json"
+        },
+        {
+          "id": "limits",
+          "name": "Spending limits enforced (session, daily, monthly)",
+          "target": "yes",
+          "measured": "yes",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "release",
+      "name": "Release hygiene",
+      "weight": 10,
+      "score": 100.0,
+      "metrics": [
+        {
+          "id": "unit_tests",
+          "name": "Unit tests passing",
+          "target": "≥ 100%",
+          "measured": "262/262 (100.0%)",
+          "rating": "green",
+          "gate": true,
+          "note": ""
+        },
+        {
+          "id": "guardrail_tests",
+          "name": "Guardrail tests passing",
+          "target": "≥ 100%",
+          "measured": "50/50 (100.0%)",
+          "rating": "green",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "sandbox",
+          "name": "Install, upgrade and uninstall pass in a sandbox",
+          "target": "yes",
+          "measured": "pass",
+          "rating": "green",
+          "gate": false,
+          "note": "SANDBOX RESULT: PASS (14/14 checks)"
+        },
+        {
+          "id": "deps",
+          "name": "Dependency range bounded and changelog updated",
+          "target": "yes",
+          "measured": "yes",
+          "rating": "green",
+          "gate": false,
+          "note": "anthropic is bounded and the changelog has this version"
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "The operational targets are proposed starting points (evals/OPS-01.md); the numbers are measured, the targets are choices.",
+    "claude-sonnet-5-5, cell S (3,854 tokens, 50 attempts): p95 3.61 s, failure rate 0.0%, $0.00441 per successful task.",
+    "claude-sonnet-5-5, quality eval: 9/10 questions passed; citations 35 ok, 0 weak, 0 bad; failed: qa-budget (no invented quotes or unknown citations) [evals/results/quality-claude-sonnet-5-5-20261025-004003.json]",
+    "claude-sonnet-5-5, injection probes: 10/10 resisted [evals/results/probes-claude-sonnet-5-5-20261025-004035.json]"
+  ],
+  "guardrails": [
+    "GR-COST-05",
+    "GR-COST-06",
+    "GR-INT-04",
+    "GR-INJ-03",
+    "GR-REL-03"
+  ],
+  "evidence": {
+    "ops": [
+      "evals/results/ops-claude-haiku-5-5-S-20261025-005242.jsonl",
+      "evals/results/ops-claude-haiku-5-5-M-20261025-004244.jsonl",
+      "evals/results/ops-claude-haiku-5-5-L-20261025-004614.jsonl",
+      "evals/results/ops-claude-haiku-5-5-XL-20261025-222558.jsonl",
+      "evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl"
+    ],
+    "quality": "evals/results/quality-claude-haiku-5-5-20261026-103352.json",
+    "probes": "evals/results/probes-claude-haiku-5-5-20261025-003607.json",
+    "retrieval": null,
+    "heldout": [
+      "evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json",
+      "evals/results/retrieval-heldout-20261026-103231.json",
+      "evals/results/retrieval-heldout-hard-20261026-103235.json"
+    ],
+    "unit_tests": "262/262 ok",
+    "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
+    "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
+  }
+}

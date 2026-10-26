@@ -1,0 +1,101 @@
+# HELD-OUT question set for the fictional sample transcripts in samples/transcripts/.
+# Written 2026-10-26 by Claude Code (a model), then FROZEN. Its SHA-256 is in FROZEN.sha256 and a unit test fails if the
+# file changes without the hash being updated, so any change shows up in review.
+#
+# Rules for this file:
+#   - SYNONYMS, the stemmer, the stopwords and every other part of retrieval must NEVER be tuned against these questions.
+#     They exist to measure how retrieval and answers generalise beyond evals/questions.yaml, which the retriever was
+#     developed on (see evals/CONTAMINATION.md).
+#   - The questions paraphrase: they avoid the key nouns and verbs of the original questions and of the answer turns.
+#   - They were written by a model, not by a person, and they are about the same two fictional calls. A held-out set
+#     written by a human reviewer, ideally on real transcripts, is still needed; this file does not replace it.
+#
+# Same schema as evals/questions.yaml, plus one optional field:
+#   expect_all    every text must appear in the answer (case-insensitive)
+#   expect_files  each text must match the file name of at least one meeting cited in the answer
+#   answer_turns  the turns that hold the answer (meeting|start), for measuring RAG retrieval
+#   not_found     the answer must say "Not found in the transcripts" (the facts are NOT in the data)
+#   follows       the id of the question this one follows up: it is asked with that question (and its answer) as the
+#                 previous turn of the conversation, the way a person asks a follow-up in the app
+
+- id: ho-go-out-day
+  kind: lookup
+  question: "On which day is the site rebuild now going out to everyone, and what was holding it up?"
+  expect_all: ["14", "payment"]
+  expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
+
+- id: ho-go-out-gate
+  kind: lookup
+  follows: ho-go-out-day
+  question: "Is there anything that has to exist first, or it does not happen?"
+  expect_all: ["rollback"]
+  expect_files: ["planning"]
+  answer_turns: ["Product planning call|05:50"]
+
+- id: ho-outside-testers
+  kind: lookup
+  question: "What spending ceiling was agreed for bringing in outsiders to check quality?"
+  expect_all: ["18,000"]
+  expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
+
+- id: ho-early-access
+  kind: lookup
+  question: "How large is the early-access group of client companies, and on what date are they asked to join?"
+  expect_all: ["25", "nov"]
+  expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
+
+- id: ho-night-theme
+  kind: lookup
+  question: "Was the low-light colour scheme kept for the first release, and how much extra effort would it have taken?"
+  expect_all: ["three days", "two"]
+  expect_files: ["planning"]
+  answer_turns: ["Product planning call|03:05", "Product planning call|03:50"]
+
+- id: ho-compliance-paperwork
+  kind: lookup
+  question: "What compliance paperwork did the client want to see before committing?"
+  expect_all: ["soc 2", "data processing"]
+  expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|02:15"]
+
+- id: ho-yearly-bill
+  kind: lookup
+  question: "What would the logistics firm's yearly bill come to if they settle it all at once?"
+  expect_all: ["10,800"]
+  expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|00:00"]
+
+- id: ho-login-tech
+  kind: commitment
+  question: "Which login technology does their side have to configure, and by when?"
+  expect_all: ["saml", "7"]
+  expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|00:00"]
+
+- id: ho-login-person
+  kind: commitment
+  follows: ho-login-tech
+  question: "And is whoever handles that in the office all the time?"
+  expect_all: ["two days"]
+  expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|01:40"]
+
+- id: ho-cross
+  kind: comparison
+  question: "Across the two calls, where did someone request an independent audit certificate, and where did someone ask for extra money to bring in another person to check the software?"
+  expect_all: ["soc 2", "18,000"]
+  expect_files: ["planning", "onboarding"]
+  answer_turns: ["Customer onboarding call|02:15", "Product planning call|00:00"]
+
+- id: ho-trap-hiring
+  kind: not_in_data
+  question: "How many engineers does the firm plan to recruit next quarter?"
+  not_found: true
+
+- id: ho-trap-renewal
+  kind: not_in_data
+  question: "What did the two sides agree about renewing the arrangement after the first year?"
+  not_found: true

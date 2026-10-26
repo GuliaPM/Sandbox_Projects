@@ -1,0 +1,705 @@
+{
+  "suite": "RET-01",
+  "engine": "rag",
+  "run_at": "2026-10-26T10:26:03",
+  "questions_set": "heldout",
+  "questions_file": "evals/heldout/questions.yaml",
+  "distractors": "easy",
+  "synonyms": "current",
+  "synonyms_fingerprint": "b78096050ec0",
+  "settings": {
+    "rag_top_k": 12,
+    "rag_neighbors": 1,
+    "rag_max_tokens": 6000
+  },
+  "cells": {
+    "S": {
+      "meetings": 2,
+      "chunks": 32,
+      "full_context_tokens_est": 2810,
+      "questions": 10,
+      "all_answer_turns_found": 7,
+      "any_answer_turn_found": 7,
+      "answer_turn_recall": 0.6666666666666666,
+      "avg_tokens_sent_est": 1996,
+      "max_tokens_sent_est": 2506,
+      "share_of_full_context": 0.71,
+      "traps": 2,
+      "traps_without_a_call": 0,
+      "index_build_ms": 1.5,
+      "avg_retrieval_ms": 0.26,
+      "per_question": [
+        {
+          "id": "ho-go-out-day",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1632,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-go-out-gate",
+          "kind": "lookup",
+          "follows": "ho-go-out-day",
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1847,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-outside-testers",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 5,
+          "meetings": 2,
+          "tokens_estimate": 585,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-early-access",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 16,
+          "meetings": 2,
+          "tokens_estimate": 1608,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-night-theme",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 5,
+          "meetings": 2,
+          "tokens_estimate": 923,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            false,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-compliance-paperwork",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 14,
+          "meetings": 2,
+          "tokens_estimate": 1500,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-yearly-bill",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 7,
+          "meetings": 2,
+          "tokens_estimate": 993,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-tech",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1787,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-person",
+          "kind": "commitment",
+          "follows": "ho-login-tech",
+          "turns": 15,
+          "meetings": 2,
+          "tokens_estimate": 1258,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-cross",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1921,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-hiring",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 8,
+          "meetings": 2,
+          "tokens_estimate": 1110,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-renewal",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1767,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        }
+      ]
+    },
+    "M": {
+      "meetings": 9,
+      "chunks": 108,
+      "full_context_tokens_est": 10881,
+      "questions": 10,
+      "all_answer_turns_found": 6,
+      "any_answer_turn_found": 7,
+      "answer_turn_recall": 0.5833333333333334,
+      "avg_tokens_sent_est": 2998,
+      "max_tokens_sent_est": 4346,
+      "share_of_full_context": 0.276,
+      "traps": 2,
+      "traps_without_a_call": 0,
+      "index_build_ms": 6.1,
+      "avg_retrieval_ms": 0.46,
+      "per_question": [
+        {
+          "id": "ho-go-out-day",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1632,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-go-out-gate",
+          "kind": "lookup",
+          "follows": "ho-go-out-day",
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1847,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-outside-testers",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 14,
+          "meetings": 5,
+          "tokens_estimate": 1622,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-early-access",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 31,
+          "meetings": 7,
+          "tokens_estimate": 3493,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-night-theme",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 5,
+          "meetings": 2,
+          "tokens_estimate": 923,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            false,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-compliance-paperwork",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 30,
+          "meetings": 9,
+          "tokens_estimate": 3761,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-yearly-bill",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 16,
+          "meetings": 5,
+          "tokens_estimate": 2030,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-tech",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1787,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-person",
+          "kind": "commitment",
+          "follows": "ho-login-tech",
+          "turns": 25,
+          "meetings": 4,
+          "tokens_estimate": 2468,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-cross",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 32,
+          "meetings": 9,
+          "tokens_estimate": 3628,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-hiring",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 27,
+          "meetings": 7,
+          "tokens_estimate": 3425,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-renewal",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 21,
+          "meetings": 4,
+          "tokens_estimate": 2338,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        }
+      ]
+    },
+    "L": {
+      "meetings": 39,
+      "chunks": 437,
+      "full_context_tokens_est": 45720,
+      "questions": 10,
+      "all_answer_turns_found": 5,
+      "any_answer_turn_found": 6,
+      "answer_turn_recall": 0.5,
+      "avg_tokens_sent_est": 3928,
+      "max_tokens_sent_est": 6574,
+      "share_of_full_context": 0.086,
+      "traps": 2,
+      "traps_without_a_call": 0,
+      "index_build_ms": 26.4,
+      "avg_retrieval_ms": 0.96,
+      "per_question": [
+        {
+          "id": "ho-go-out-day",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1632,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-go-out-gate",
+          "kind": "lookup",
+          "follows": "ho-go-out-day",
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1847,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-outside-testers",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 29,
+          "meetings": 8,
+          "tokens_estimate": 3702,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-early-access",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 33,
+          "meetings": 9,
+          "tokens_estimate": 3596,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-night-theme",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 5,
+          "meetings": 2,
+          "tokens_estimate": 923,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            false,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-compliance-paperwork",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 45,
+          "meetings": 22,
+          "tokens_estimate": 5989,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-yearly-bill",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 29,
+          "meetings": 10,
+          "tokens_estimate": 3549,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-tech",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1787,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-person",
+          "kind": "commitment",
+          "follows": "ho-login-tech",
+          "turns": 45,
+          "meetings": 18,
+          "tokens_estimate": 4813,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-cross",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 40,
+          "meetings": 20,
+          "tokens_estimate": 4649,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-hiring",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 40,
+          "meetings": 18,
+          "tokens_estimate": 4824,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-renewal",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 23,
+          "meetings": 5,
+          "tokens_estimate": 2807,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        }
+      ]
+    },
+    "XL": {
+      "meetings": 99,
+      "chunks": 1069,
+      "full_context_tokens_est": 114328,
+      "questions": 10,
+      "all_answer_turns_found": 5,
+      "any_answer_turn_found": 6,
+      "answer_turn_recall": 0.5,
+      "avg_tokens_sent_est": 4252,
+      "max_tokens_sent_est": 6567,
+      "share_of_full_context": 0.037,
+      "traps": 2,
+      "traps_without_a_call": 0,
+      "index_build_ms": 285.5,
+      "avg_retrieval_ms": 6.97,
+      "per_question": [
+        {
+          "id": "ho-go-out-day",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 18,
+          "meetings": 2,
+          "tokens_estimate": 1632,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-go-out-gate",
+          "kind": "lookup",
+          "follows": "ho-go-out-day",
+          "turns": 21,
+          "meetings": 2,
+          "tokens_estimate": 1847,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-outside-testers",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 35,
+          "meetings": 12,
+          "tokens_estimate": 4444,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-early-access",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 33,
+          "meetings": 9,
+          "tokens_estimate": 3506,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-night-theme",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 5,
+          "meetings": 2,
+          "tokens_estimate": 923,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            false,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-compliance-paperwork",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 45,
+          "meetings": 23,
+          "tokens_estimate": 5973,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-yearly-bill",
+          "kind": "lookup",
+          "follows": null,
+          "turns": 30,
+          "meetings": 10,
+          "tokens_estimate": 3833,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-tech",
+          "kind": "commitment",
+          "follows": null,
+          "turns": 19,
+          "meetings": 2,
+          "tokens_estimate": 1787,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            true
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-login-person",
+          "kind": "commitment",
+          "follows": "ho-login-tech",
+          "turns": 56,
+          "meetings": 35,
+          "tokens_estimate": 5982,
+          "answer_turns": 1,
+          "answer_turns_found": [
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-cross",
+          "kind": "comparison",
+          "follows": null,
+          "turns": 46,
+          "meetings": 24,
+          "tokens_estimate": 5117,
+          "answer_turns": 2,
+          "answer_turns_found": [
+            true,
+            false
+          ],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-hiring",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 51,
+          "meetings": 32,
+          "tokens_estimate": 5980,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        },
+        {
+          "id": "ho-trap-renewal",
+          "kind": "not_in_data",
+          "follows": null,
+          "turns": 24,
+          "meetings": 6,
+          "tokens_estimate": 2975,
+          "answer_turns": 0,
+          "answer_turns_found": [],
+          "no_match": false
+        }
+      ]
+    }
+  }
+}

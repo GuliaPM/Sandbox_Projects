@@ -5,9 +5,11 @@
     python evals/run_eval.py --yes --only launch-date,trap-competitor
     python evals/run_eval.py --model claude-sonnet-5-5 --yes      same eval on another model
     python evals/run_eval.py --engine rag --yes                    same eval with the RAG engine
+    python evals/run_eval.py --questions evals/heldout/questions.yaml --yes     the frozen held-out questions
 
 By default it uses the fictional transcripts in samples/transcripts; --transcripts points it at another folder
 (then the questions must be your own). It needs an API key: save one in the app's Settings, or set ANTHROPIC_API_KEY.
+A question with `follows: <id>` is asked as a follow-up: with that question and its answer as the previous turn.
 """
 from __future__ import annotations
 
@@ -18,12 +20,13 @@ from dataclasses import replace
 from datetime import datetime
 from pathlib import Path
 
-import yaml
-
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 RESULTS = HERE / "results"
 sys.path.insert(0, str(ROOT / "src"))  # lets this run from a checkout without installing the package
+sys.path.insert(0, str(HERE))
+
+import questionset  # noqa: E402
 
 from meetminer.engine import (  # noqa: E402
     Answer, ConfigError, CostTracker, MeetingQA, cost_usd, has_credentials, load_env, load_settings, print_answer,
@@ -70,6 +73,8 @@ def main() -> int:
     parser.add_argument("--engine", choices=["full", "rag"], default="full", help="full context (default) or RAG")
     parser.add_argument("--transcripts", default=str(ROOT / "samples" / "transcripts"),
                         help="folder with the transcripts to ask about (default: the fictional samples)")
+    parser.add_argument("--questions", default=str(questionset.ORIGINAL),
+                        help="question file (default: evals/questions.yaml; held-out: evals/heldout/questions.yaml)")
     parser.add_argument("--out", help="where to write the results (default: evals/results/quality-<model>-<time>.json)")
     args = parser.parse_args()
 
@@ -86,15 +91,13 @@ def main() -> int:
     if not loaded.meetings:
         print("No transcripts found; nothing to evaluate.")
         return 2
-    questions = yaml.safe_load((HERE / "questions.yaml").read_text(encoding="utf-8"))
-    if args.only:
-        wanted = set(args.only.split(","))
-        questions = [q for q in questions if q["id"] in wanted]
+    questions = questionset.only(questionset.load(args.questions), args.only)
+    qset = questionset.label(args.questions)
 
     qa = MeetingQA(settings, loaded.meetings, CostTracker(settings))
     tokens, how = qa.count_corpus_tokens()
     low, high = estimate(len(questions), tokens, settings)
-    print(f"{len(questions)} questions on {settings.model} (effort {settings.effort}), engine {settings.engine}; "
+    print(f"{len(questions)} {qset} questions on {settings.model} (effort {settings.effort}), engine {settings.engine}; "
           f"full prompt {tokens:,} tokens ({how}){'; RAG sends less' if settings.engine == 'rag' else ''}.")
     print(f"Estimated cost: ${low:.2f} to ${high:.2f}  (cap for this run: ${settings.max_session_cost_usd:.2f})")
     if args.dry_run:
@@ -106,15 +109,19 @@ def main() -> int:
         return 1
 
     outcomes = []
+    asked: dict[str, tuple[str, str]] = {}
     for q in questions:
-        print("\n" + "=" * 78 + f"\n{q['id']}  ({q['kind']})\nQ: {q['question']}\n")
-        ans = qa.ask(q["question"], [])
+        history = questionset.history_for(q, asked)
+        print("\n" + "=" * 78 + f"\n{q['id']}  ({q['kind']})" + (f"  follow-up to {q['follows']}" if history else "")
+              + f"\nQ: {q['question']}\n")
+        ans = qa.ask(q["question"], history)
+        asked[q["id"]] = (q["question"], ans.text)
         print_answer(ans)
         checks = judge(q, ans, qa)
         for name, ok, detail in checks:
             print(f"   [{'PASS' if ok else 'FAIL'}] {name}" + (f" - {detail}" if detail and not ok else ""))
         outcomes.append({
-            "id": q["id"], "kind": q.get("kind", ""), "passed": all(ok for _, ok, _ in checks),
+            "id": q["id"], "kind": q.get("kind", ""), "follows": q.get("follows"), "passed": all(ok for _, ok, _ in checks),
             "cost": round(ans.cost, 6), "answer": ans.text, "error": ans.error,
             "citations": [c.status for c in (ans.check.citations if ans.check else [])],
             "uncited_missing": sum(1 for x in (ans.check.uncited_quotes if ans.check else []) if x.status == "missing"),
@@ -135,10 +142,12 @@ def main() -> int:
         if not o["passed"]:
             print(f"  FAILED {o['id']}: {', '.join(o['failed_checks'])}")
     summary = {"suite": "quality", "engine": settings.engine, "model": settings.model, "effort": settings.effort,
-               "run_at": datetime.now().isoformat(timespec="seconds"), "questions": len(outcomes), "passed": passed,
-               "cost_usd": round(qa.tracker.total, 6), "outcomes": outcomes}
+               "questions_set": qset, "run_at": datetime.now().isoformat(timespec="seconds"), "questions": len(outcomes),
+               "passed": passed, "cost_usd": round(qa.tracker.total, 6), "outcomes": outcomes}
     RESULTS.mkdir(exist_ok=True)
     kind = "quality-rag" if settings.engine == "rag" else "quality"  # full context keeps the original file names
+    if qset != "original":
+        kind += f"-{qset}"  # quality-heldout-<model>-..., quality-rag-heldout-<model>-...
     out = Path(args.out) if args.out else RESULTS / f"{kind}-{settings.model}-{datetime.now():%Y%m%d-%H%M%S}.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(f"Saved {out}")

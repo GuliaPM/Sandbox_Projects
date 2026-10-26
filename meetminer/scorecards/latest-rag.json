@@ -3,7 +3,7 @@
   "app": "MeetMiner",
   "version": "1.2.0",
   "engine": "rag",
-  "generated": "2026-10-25T22:38:29",
+  "generated": "2026-10-26T10:42:39",
   "decision": "SHIP",
   "total": 100.0,
   "gates_failed": [],
@@ -48,6 +48,15 @@
           "rating": "green",
           "gate": false,
           "note": ""
+        },
+        {
+          "id": "heldout_quality",
+          "name": "Held-out questions answered correctly (model-written set)",
+          "target": "for information",
+          "measured": "9/12 (75.0%)",
+          "rating": "info",
+          "gate": false,
+          "note": "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json"
         }
       ]
     },
@@ -88,16 +97,34 @@
           "id": "share_xl",
           "name": "Text sent, share of full context, 160k-token transcripts",
           "target": "for information",
-          "measured": "2% (about 2,912 of 114,328 tokens)",
+          "measured": "3% (about 3,528 of 114,328 tokens)",
           "rating": "info",
           "gate": false,
-          "note": "evals/results/retrieval-20261025-221401.json"
+          "note": "evals/results/retrieval-20261026-103222.json"
         },
         {
           "id": "traps",
           "name": "Not-in-the-transcripts questions ended without a call",
           "target": "for information",
           "measured": "1/2 (50.0%) ended without a call",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "heldout_found_s",
+          "name": "Held-out answer turns retrieved, sample transcripts",
+          "target": "for information",
+          "measured": "7/10 (70.0%) (2 meetings)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
+        },
+        {
+          "id": "heldout_found_xl_hard",
+          "name": "Held-out answer turns retrieved, 160k-token transcripts with near-miss filler",
+          "target": "for information",
+          "measured": "6/10 (60.0%) (99 meetings, hard distractors)",
           "rating": "info",
           "gate": false,
           "note": ""
@@ -114,7 +141,7 @@
           "id": "verified",
           "name": "Citations verified by the checker",
           "target": "≥ 98% (amber ≥ 95%)",
-          "measured": "288/288 (100.0%) of 110 answers",
+          "measured": "283/283 (100.0%) of 110 answers",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -132,7 +159,7 @@
           "id": "weak",
           "name": "Citations pointing at the wrong turn",
           "target": "≤ 2% (amber ≤ 5%)",
-          "measured": "0/288 (0.0%) of citations",
+          "measured": "0/283 (0.0%) of citations",
           "rating": "green",
           "gate": false,
           "note": ""
@@ -291,7 +318,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "242/242 (100.0%)",
+          "measured": "262/262 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -345,10 +372,15 @@
       "evals/results/ops-rag-claude-haiku-5-5-L-20261025-222351.jsonl",
       "evals/results/ops-rag-claude-haiku-5-5-XL-20261025-222511.jsonl"
     ],
-    "quality": "evals/results/quality-rag-claude-haiku-5-5-20261025-221819.json",
+    "quality": "evals/results/quality-rag-claude-haiku-5-5-20261026-103439.json",
     "probes": "evals/results/probes-rag-claude-haiku-5-5-20261025-221847.json",
-    "retrieval": "evals/results/retrieval-20261025-221401.json",
-    "unit_tests": "242/242 ok",
+    "retrieval": "evals/results/retrieval-20261026-103222.json",
+    "heldout": [
+      "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json",
+      "evals/results/retrieval-heldout-20261026-103231.json",
+      "evals/results/retrieval-heldout-hard-20261026-103235.json"
+    ],
+    "unit_tests": "262/262 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

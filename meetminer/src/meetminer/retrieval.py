@@ -27,16 +27,19 @@ really get got go going well think know right said say says thing things lot
 """.split())
 
 # Words a person asks with that the transcript may say differently. Applied to the question only, at half weight.
+# Only general English synonyms belong here. Entries that mirrored the wording of the eval questions and their answer
+# turns (price->per, documents->report/agreement/contract, owns->deliver, security->soc/review, discount->prepay,
+# invitations->invites, signing->sign/signature) were removed in 1.2.1; see evals/CONTAMINATION.md. Never add an entry
+# because an eval question needs it, and never tune this list against evals/heldout/questions.yaml.
 SYNONYMS = {
-    "price": ["cost", "pricing", "fee", "per"], "cost": ["price", "pricing", "spend"], "fee": ["price", "cost"],
-    "document": ["report", "agreement", "contract", "paperwork"], "documents": ["report", "agreement", "contract"],
+    "price": ["cost", "pricing", "fee"], "cost": ["price", "pricing", "spend"], "fee": ["price", "cost"],
+    "document": ["paperwork"],
     "deadline": ["due", "date"], "due": ["deadline", "date"], "when": ["date", "day"],
     "budget": ["money", "spend", "dollars"], "money": ["budget", "dollars"],
-    "action": ["task", "follow"], "owner": ["own", "responsible"], "owns": ["own", "owner", "deliver"],
+    "action": ["task", "follow"], "owner": ["own", "responsible"], "owns": ["own", "owner"],
     "decided": ["decision", "agreed", "agree"], "decision": ["decided", "agreed"],
-    "security": ["soc", "compliance", "review"], "launch": ["release", "ship", "live"],
-    "customers": ["users", "clients"], "invitations": ["invites", "invite"], "signing": ["sign", "signature"],
-    "discount": ["prepay", "off"], "meeting": ["call"], "call": ["meeting"],
+    "security": ["compliance"], "launch": ["release", "ship", "live"],
+    "customers": ["users", "clients"], "discount": ["off"], "meeting": ["call"], "call": ["meeting"],
 }
 _TOKEN = re.compile(r"[a-z0-9]+(?:[.,'][a-z0-9]+)*")
 _SUFFIXES = ("ations", "ation", "ments", "ment", "ings", "ing", "edly", "ies", "ied", "es", "ed", "ly", "s")

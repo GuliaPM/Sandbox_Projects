@@ -26,6 +26,9 @@ dimensions:
          higher_is_better: true, green: 1.0, amber: 0.5, format: fraction, gate: true}
       - {id: cross_meeting, name: "Cross-meeting comparison correct", source: quality.comparison,
          higher_is_better: true, green: 1.0, amber: 0.5, format: fraction}
+      # The frozen held-out set (evals/heldout/questions.yaml, model-written): shown, not scored, not a gate yet.
+      - {id: heldout_quality, name: "Held-out questions answered correctly (model-written set)", source: heldout.quality,
+         info: true, format: fraction}
 
   - id: retrieval
     name: "Retrieval (RET-01)"
@@ -41,6 +44,10 @@ dimensions:
          info: true, format: percent}
       - {id: traps, name: "Not-in-the-transcripts questions ended without a call", source: retrieval.traps_S,
          info: true, format: fraction}
+      - {id: heldout_found_s, name: "Held-out answer turns retrieved, sample transcripts", source: heldout.found_S,
+         info: true, format: fraction}
+      - {id: heldout_found_xl_hard, name: "Held-out answer turns retrieved, 160k-token transcripts with near-miss filler",
+         source: heldout.found_XL_hard, info: true, format: fraction}
 
   - id: citations
     name: "Citation integrity"
