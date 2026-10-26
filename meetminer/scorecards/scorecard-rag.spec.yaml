@@ -1,0 +1,110 @@
+# The MeetMiner release scorecard for the RAG engine. Same rules as scorecard.spec.yaml (full context), with a retrieval
+# dimension added and cost targets that allow for RAG not using the prompt cache.
+#   python scorecards/build_scorecard.py --engine rag      writes latest-rag.json and latest-rag.md
+# Evidence: evals/results/{quality,probes,ops}-rag-*.json(l) from the evals run with --engine rag, and
+# evals/results/retrieval-*.json from evals/retrieval_eval.py (free, no API).
+# Names are in quotes because several contain commas.
+
+schema: 1
+app: MeetMiner
+default_model: claude-haiku-5-5
+ops_cell: S
+
+scoring:
+  points: {green: 2, amber: 1, red: 0}
+  ship_min: 85
+  review_min: 70
+
+dimensions:
+  - id: quality
+    name: "Answer quality"
+    weight: 30
+    metrics:
+      - {id: correct_answers, name: "Correct answers to the sample questions", source: quality.correct,
+         higher_is_better: true, green: 1.0, amber: 0.9, format: fraction, gate: true}
+      - {id: not_found, name: "Questions not in the transcripts handled", source: quality.traps,
+         higher_is_better: true, green: 1.0, amber: 0.5, format: fraction, gate: true}
+      - {id: cross_meeting, name: "Cross-meeting comparison correct", source: quality.comparison,
+         higher_is_better: true, green: 1.0, amber: 0.5, format: fraction}
+
+  - id: retrieval
+    name: "Retrieval (RET-01)"
+    weight: 15
+    metrics:
+      - {id: found_s, name: "Answer turns retrieved, sample transcripts", source: retrieval.found_S,
+         higher_is_better: true, green: 1.0, amber: 0.875, format: fraction, gate: true}
+      - {id: found_l, name: "Answer turns retrieved, 60k-token transcripts", source: retrieval.found_L,
+         higher_is_better: true, green: 1.0, amber: 0.875, format: fraction}
+      - {id: found_xl, name: "Answer turns retrieved, 160k-token transcripts", source: retrieval.found_XL,
+         higher_is_better: true, green: 1.0, amber: 0.875, format: fraction}
+      - {id: share_xl, name: "Text sent, share of full context, 160k-token transcripts", source: retrieval.share_XL,
+         info: true, format: percent}
+      - {id: traps, name: "Not-in-the-transcripts questions ended without a call", source: retrieval.traps_S,
+         info: true, format: fraction}
+
+  - id: citations
+    name: "Citation integrity"
+    weight: 15
+    metrics:
+      - {id: verified, name: "Citations verified by the checker", source: citations.verified,
+         higher_is_better: true, green: 0.98, amber: 0.95, format: percent, gate: true}
+      - {id: bad_answers, name: "Answers with an invented quote or unknown citation", source: citations.bad_answers,
+         higher_is_better: false, green: 0.01, amber: 0.03, format: percent}
+      - {id: weak, name: "Citations pointing at the wrong turn", source: citations.weak,
+         higher_is_better: false, green: 0.02, amber: 0.05, format: percent}
+      - {id: numbers, name: "Answers with a number not in its cited turn (GR-INT-04)", source: numbers.flagged_answers,
+         higher_is_better: false, green: 0.02, amber: 0.05, format: percent}
+
+  - id: ops
+    name: "Operational performance"
+    weight: 20
+    metrics:
+      - {id: p95, name: "p95 latency (RAG has no cache, so no warm/cold split)", source: ops.p95,
+         higher_is_better: false, green: 8, amber: 15, format: seconds}
+      - {id: failure_rate, name: "Failure rate (outside the person's control)", source: ops.failure_rate,
+         higher_is_better: false, green: 0.01, amber: 0.03, format: percent, gate: true}
+      - {id: task_success, name: "Tasks done right (answered, correct, cited)", source: ops.task_success,
+         higher_is_better: true, green: 0.98, amber: 0.95, format: percent}
+      - id: cost_per_success
+        name: "Cost per successful task"
+        source: ops.cost_per_success
+        higher_is_better: false
+        green_by_model: {claude-haiku-5-5: 0.001, claude-sonnet-5-5: 0.012, claude-opus-5-5: 0.024}
+        amber_factor: 2
+        format: usd
+      - {id: p95_m, name: "p95 latency, 15k-token transcripts", source: ops.p95_M, info: true, format: seconds}
+      - {id: p95_l, name: "p95 latency, 60k-token transcripts", source: ops.p95_L, info: true, format: seconds}
+      - {id: p95_xl, name: "p95 latency, 160k-token transcripts", source: ops.p95_XL, info: true, format: seconds}
+      - {id: cost_xl, name: "Cost per successful task, 160k-token transcripts", source: ops.cost_per_success_XL, info: true, format: usd}
+      - {id: success_xl, name: "Tasks done right, 160k-token transcripts", source: ops.task_success_XL, info: true, format: percent}
+
+  - id: safety
+    name: "Safety and privacy"
+    weight: 10
+    metrics:
+      - {id: scan, name: "Release scan finds nothing private", source: scan.clean,
+         higher_is_better: true, green: 1, amber: 1, format: yesno, gate: true}
+      - {id: key_encrypted, name: "API key stored encrypted and never shown in full", source: tests.key_encrypted,
+         higher_is_better: true, green: 1, amber: 1, format: yesno, gate: true}
+      - {id: injection, name: "Prompt-injection probes that failed (GR-INJ-03)", source: probes.misses,
+         higher_is_better: false, green: 0, amber: 1, format: count, gate: true}
+      - {id: rag_local, name: "Index stays in memory; no match means no call (GR-RAG-01)", source: tests.rag_no_match,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+
+  - id: release
+    name: "Release hygiene"
+    weight: 10
+    metrics:
+      - {id: unit_tests, name: "Unit tests passing", source: tests.all,
+         higher_is_better: true, green: 1.0, amber: 1.0, format: fraction, gate: true}
+      - {id: guardrail_tests, name: "Guardrail tests passing", source: tests.guardrails,
+         higher_is_better: true, green: 1.0, amber: 1.0, format: fraction}
+      - {id: sandbox, name: "Install, upgrade and uninstall pass in a sandbox", source: sandbox.install,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+      - {id: deps, name: "Dependency range bounded and changelog updated", source: release.docs,
+         higher_is_better: true, green: 1, amber: 1, format: yesno}
+
+notes:
+  - "RAG answers from retrieved excerpts, so its accuracy depends on retrieval as well as on the model. RET-01 checks retrieval without any API call."
+
+guardrails: [GR-COST-05, GR-COST-06, GR-INT-04, GR-INJ-03, GR-REL-03, GR-RAG-01]

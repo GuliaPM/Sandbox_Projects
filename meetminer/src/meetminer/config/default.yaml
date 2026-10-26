@@ -8,6 +8,14 @@ usage_log: "usage.csv"         # one line per attempt (time, model, tokens, cost
 model: "claude-haiku-5-5"      # the cheapest; Settings lets you pick Sonnet for the most reliable citations
 effort: "low"
 max_tokens: 2000
+
+# How the transcripts reach Claude. The switch in the window changes it (and remembers your choice).
+#   full  every question sends all the transcripts (prompt-cached); nothing can be missed, cost grows with the transcripts
+#   rag   a local keyword index (BM25, in memory only) picks the passages that match; only those are sent
+engine: "full"
+rag_top_k: 12          # RAG: best-matching passages to start from
+rag_neighbors: 1       # RAG: turns kept on either side of each passage, so a question and its answer stay together
+rag_max_tokens: 6000   # RAG: most transcript text sent with one question (estimated tokens)
 cache_ttl: "5m"
 
 # USD per million tokens (update if Anthropic changes them)

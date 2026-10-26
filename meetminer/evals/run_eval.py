@@ -4,6 +4,7 @@
     python evals/run_eval.py               estimate, ask for confirmation, then run
     python evals/run_eval.py --yes --only launch-date,trap-competitor
     python evals/run_eval.py --model claude-sonnet-5-5 --yes      same eval on another model
+    python evals/run_eval.py --engine rag --yes                    same eval with the RAG engine
 
 By default it uses the fictional transcripts in samples/transcripts; --transcripts points it at another folder
 (then the questions must be your own). It needs an API key: save one in the app's Settings, or set ANTHROPIC_API_KEY.
@@ -66,13 +67,14 @@ def main() -> int:
     parser.add_argument("--only", help="comma-separated question ids")
     parser.add_argument("--effort", help="override the effort for this run (low | medium | high)")
     parser.add_argument("--model", help="override the model for this run (it needs a price entry in default.yaml)")
+    parser.add_argument("--engine", choices=["full", "rag"], default="full", help="full context (default) or RAG")
     parser.add_argument("--transcripts", default=str(ROOT / "samples" / "transcripts"),
                         help="folder with the transcripts to ask about (default: the fictional samples)")
     parser.add_argument("--out", help="where to write the results (default: evals/results/quality-<model>-<time>.json)")
     args = parser.parse_args()
 
     try:
-        settings = with_overrides(load_settings(), args.model, args.effort)
+        settings = with_overrides(load_settings(), args.model, args.effort, args.engine)
     except ConfigError as exc:
         print(f"Config problem: {exc}")
         return 2
@@ -92,7 +94,8 @@ def main() -> int:
     qa = MeetingQA(settings, loaded.meetings, CostTracker(settings))
     tokens, how = qa.count_corpus_tokens()
     low, high = estimate(len(questions), tokens, settings)
-    print(f"{len(questions)} questions on {settings.model} (effort {settings.effort}); prompt {tokens:,} tokens ({how}).")
+    print(f"{len(questions)} questions on {settings.model} (effort {settings.effort}), engine {settings.engine}; "
+          f"full prompt {tokens:,} tokens ({how}){'; RAG sends less' if settings.engine == 'rag' else ''}.")
     print(f"Estimated cost: ${low:.2f} to ${high:.2f}  (cap for this run: ${settings.max_session_cost_usd:.2f})")
     if args.dry_run:
         return 0
@@ -118,6 +121,9 @@ def main() -> int:
             "numbers": {"checked": len(ans.check.numbers) if ans.check else 0,
                         "flagged": len(ans.check.numbers_flagged) if ans.check else 0},
             "failed_checks": [name for name, ok, _ in checks if not ok],
+            "retrieval": None if ans.retrieved is None else {
+                "turns": len(ans.retrieved.turns), "tokens_estimate": ans.retrieved.tokens_estimate,
+                "answer_turns_found": [ans.retrieved.holds(*t.split("|")) for t in q.get("answer_turns", [])]},
         })
 
     passed = sum(o["passed"] for o in outcomes)
@@ -128,11 +134,12 @@ def main() -> int:
     for o in outcomes:
         if not o["passed"]:
             print(f"  FAILED {o['id']}: {', '.join(o['failed_checks'])}")
-    summary = {"suite": "quality", "model": settings.model, "effort": settings.effort,
+    summary = {"suite": "quality", "engine": settings.engine, "model": settings.model, "effort": settings.effort,
                "run_at": datetime.now().isoformat(timespec="seconds"), "questions": len(outcomes), "passed": passed,
                "cost_usd": round(qa.tracker.total, 6), "outcomes": outcomes}
     RESULTS.mkdir(exist_ok=True)
-    out = Path(args.out) if args.out else RESULTS / f"quality-{settings.model}-{datetime.now():%Y%m%d-%H%M%S}.json"
+    kind = "quality-rag" if settings.engine == "rag" else "quality"  # full context keeps the original file names
+    out = Path(args.out) if args.out else RESULTS / f"{kind}-{settings.model}-{datetime.now():%Y%m%d-%H%M%S}.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(f"Saved {out}")
     return 0 if passed == len(outcomes) else 1

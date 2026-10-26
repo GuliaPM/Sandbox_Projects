@@ -257,7 +257,7 @@ class CorpusTests(unittest.TestCase):
             self.assertIn("Product planning call_transcript.txt", files)
             self.assertGreater(len(files), 5)
             with self.assertRaises(ValueError):
-                corpus.build_cell("XL", Path(tmp))
+                corpus.build_cell("XXL", Path(tmp))
 
     def test_the_size_is_brought_close_to_the_target_with_a_measuring_function(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -413,6 +413,77 @@ class ScorecardTests(unittest.TestCase):
     def test_the_documentation_check_reads_the_repository(self):
         ok, detail = card_mod.check_docs()
         self.assertTrue(ok, detail)
+
+
+retrieval_mod = load_script("retrieval_eval", ROOT / "evals" / "retrieval_eval.py")
+
+
+def rag_row(cell="S", ok=True, task=True, latency=1.5, cost=0.0006, found=(True,), turns=12, **extra):
+    return row(cell=cell, ok=ok, task=task, latency=latency, cost=cost, state="uncached", engine="rag",
+               retrieval={"turns": turns, "meetings": 2, "tokens_estimate": 2500, "answer_turns_found": list(found)},
+               **extra)
+
+
+class RagEvalTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.spec = yaml.safe_load(card_mod.SPECS["rag"].read_text(encoding="utf-8"))
+
+    def test_the_rag_spec_is_well_formed(self):
+        self.assertEqual(sum(d["weight"] for d in self.spec["dimensions"]), 100)
+        ids = [m["id"] for d in self.spec["dimensions"] for m in d["metrics"]]
+        self.assertEqual(len(ids), len(set(ids)))
+        for d in self.spec["dimensions"]:
+            for m in d["metrics"]:
+                self.assertEqual(m["name"].count("("), m["name"].count(")"), m["id"])
+
+    def test_engines_are_kept_apart_in_the_statistics(self):
+        stats = opsstats.summarize([row(), rag_row(), rag_row(found=(False,)), rag_row(turns=0, found=())])
+        self.assertIsNotNone(opsstats.find(stats, "claude-haiku-5-5", "S", "warm", "full"))
+        rag = opsstats.find(stats, "claude-haiku-5-5", "S", "all", "rag")
+        self.assertEqual((rag.attempts, rag.no_match, rag.answer_turns_found, rag.answer_turns_asked), (3, 1, 1, 2))
+        self.assertIsNone(opsstats.find(stats, "claude-haiku-5-5", "S", "warm", "rag"))  # no cache, no warm calls
+        self.assertIn("rag", opsstats.report(stats))
+
+    def healthy_rag_evidence(self):
+        ev = healthy_evidence()
+        ev.engine = "rag"
+        ev.ops = opsstats.summarize([rag_row() for _ in range(100)] + [rag_row(cell="XL", latency=3.0) for _ in range(30)])
+        tests = dict(ev.tests)
+        tests.update({f"test_rag.Case.{n}": "ok" for n in card_mod.RAG_TESTS})
+        ev.tests = tests
+        cell = {"meetings": 2, "questions": 8, "all_answer_turns_found": 8, "share_of_full_context": 0.02,
+                "avg_tokens_sent_est": 2900, "full_context_tokens_est": 114000, "traps": 2, "traps_without_a_call": 1}
+        ev.retrieval, ev.retrieval_file = {"cells": {c: dict(cell) for c in ("S", "M", "L", "XL")}}, "evals/results/retrieval.json"
+        return ev
+
+    def test_a_healthy_rag_engine_ships(self):
+        card = card_mod.build(self.spec, self.healthy_rag_evidence())
+        self.assertEqual((card["decision"], card["engine"]), ("SHIP", "rag"))
+        found = next(m for d in card["dimensions"] for m in d["metrics"] if m["id"] == "found_s")
+        self.assertEqual((found["rating"], found["measured"]), ("green", "8/8 (100.0%) (2 meetings)"))
+        share = next(m for d in card["dimensions"] for m in d["metrics"] if m["id"] == "share_xl")
+        self.assertEqual(share["rating"], "info")
+        self.assertIn("RAG engine", card_mod.markdown(card))
+        self.assertIn("(RAG)", reports.headline(card))
+
+    def test_retrieval_that_misses_answers_blocks_a_rag_release(self):
+        ev = self.healthy_rag_evidence()
+        ev.retrieval["cells"]["S"]["all_answer_turns_found"] = 6
+        card = card_mod.build(self.spec, ev)
+        self.assertEqual(card["decision"], "HOLD")
+        self.assertIn("Answer turns retrieved, sample transcripts", card["gates_failed"])
+
+    def test_rag_files_are_named_apart_from_full_context_files(self):
+        self.assertEqual((card_mod.kind("ops", "rag"), card_mod.kind("ops", "full")), ("ops-rag", "ops"))
+
+    def test_the_retrieval_eval_runs_free_on_the_samples(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            questions = yaml.safe_load((ROOT / "evals" / "questions.yaml").read_text(encoding="utf-8"))
+            r = retrieval_mod.evaluate_cell("S", questions, Path(tmp))
+        self.assertEqual((r["all_answer_turns_found"], r["questions"]), (8, 8))
+        self.assertEqual(r["traps_without_a_call"], 1)  # Kubernetes matches nothing; "competitor product" matches words
+        self.assertLess(r["share_of_full_context"], 1.0)
 
 
 class ReportsDataTests(unittest.TestCase):

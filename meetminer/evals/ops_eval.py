@@ -3,6 +3,7 @@
     python evals/ops_eval.py --cell S --reps 10 --dry-run     cost estimate only (no spend)
     python evals/ops_eval.py --cell S --reps 10 --yes         100 attempts on the sample transcripts (about $0.002 on Haiku)
     python evals/ops_eval.py --cell M --model claude-sonnet-5-5 --reps 5 --yes
+    python evals/ops_eval.py --engine rag --cell XL --reps 3 --yes     the RAG engine on ~150k tokens of transcripts
     python evals/ops_eval.py --report evals/results/ops-*.jsonl     only print the statistics of earlier runs
 
 Each repetition ("round") asks every question in evals/questions.yaml once. The first question of a round is a cold
@@ -47,6 +48,13 @@ def _round_context(meetings, question, history) -> str:
     return (f"[eval round {ROUND['nonce']}]\n" if ROUND["nonce"] else "") + render_corpus(meetings)
 
 
+def estimate_rag(attempts: int, context_tokens: int, prices: dict) -> tuple[float, float]:
+    """(low, high) USD for RAG: no cache, so every attempt pays the full input price for its excerpts."""
+    each = cost_usd({"input": context_tokens + 150, "cache_write": 0, "cache_read": 0, "output": 0}, prices)
+    per_token = prices["output_per_mtok"] / 1_000_000
+    return attempts * (each + 600 * per_token), attempts * (each + 1500 * per_token)
+
+
 def estimate(rounds: int, questions: int, corpus_tokens: int, prices: dict) -> tuple[float, float]:
     """(low, high) USD. Per round: one cold question (the cache is written) and the rest warm (it is read)."""
     cold = {"input": 150, "cache_write": corpus_tokens, "cache_read": 0, "output": 0}
@@ -61,7 +69,9 @@ def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     load_env()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--cell", default="S", choices=["S", "M", "L"], help="transcript size: S samples, M ~15k tokens, L ~60k")
+    parser.add_argument("--cell", default="S", choices=["S", "M", "L", "XL"],
+                        help="transcript size: S samples, M ~15k tokens, L ~60k, XL ~150k")
+    parser.add_argument("--engine", choices=["full", "rag"], default="full", help="full context (default) or RAG")
     parser.add_argument("--reps", type=int, default=10, help="rounds; each asks every question once (default 10)")
     parser.add_argument("--model", help="override the model for this run")
     parser.add_argument("--effort", help="override the effort for this run")
@@ -79,7 +89,7 @@ def main() -> int:
         return 0
 
     try:
-        settings = with_overrides(load_settings(), args.model, args.effort)
+        settings = with_overrides(load_settings(), args.model, args.effort, args.engine)
     except ConfigError as exc:
         print(f"Config problem: {exc}")
         return 2
@@ -100,10 +110,14 @@ def main() -> int:
     loaded = load_meetings(folder)
     qa = MeetingQA(settings, loaded.meetings, CostTracker(settings))
     tokens, how = qa.count_corpus_tokens()
-    low, high = estimate(args.reps, len(questions), tokens, settings.prices)
+    if settings.engine == "rag":  # no cache: every question pays for its excerpts (at most rag_max_tokens) and the rules
+        low, high = estimate_rag(args.reps * len(questions), min(tokens, settings.rag_max_tokens + 900), settings.prices)
+    else:
+        low, high = estimate(args.reps, len(questions), tokens, settings.prices)
     attempts = args.reps * len(questions)
     print(f"OPS-01: {attempts} attempts ({args.reps} rounds x {len(questions)} questions) on {settings.model} "
-          f"(effort {settings.effort}), cell {args.cell}: {len(loaded.meetings)} meetings, {tokens:,} prompt tokens ({how}).")
+          f"(effort {settings.effort}), engine {settings.engine}, cell {args.cell}: {len(loaded.meetings)} meetings, "
+          f"{tokens:,} prompt tokens with full context ({how}).")
     print(f"Estimated cost: ${low:.4f} to ${high:.4f}   (this run stops at ${args.max_cost:.2f})")
     if args.dry_run:
         return 0
@@ -118,7 +132,8 @@ def main() -> int:
 
     engine.get_context = _round_context  # the app's own prompt builder, with the cold-call line added
     run_id = uuid.uuid4().hex[:8]
-    out = Path(args.out) if args.out else RESULTS / f"ops-{settings.model}-{args.cell}-{datetime.now():%Y%m%d-%H%M%S}.jsonl"
+    kind = "ops-rag" if settings.engine == "rag" else "ops"  # full context keeps the original file names
+    out = Path(args.out) if args.out else RESULTS / f"{kind}-{settings.model}-{args.cell}-{datetime.now():%Y%m%d-%H%M%S}.jsonl"
     rows: list[dict] = []
     stopped = False
     with out.open("w", encoding="utf-8") as sink:
@@ -129,6 +144,8 @@ def main() -> int:
                     stopped = True
                     break
                 intended = "cold" if idx == 0 and not (args.no_cold and rnd > 1) else "warm"
+                if settings.engine == "rag":
+                    intended = "uncached"  # RAG sends different excerpts each time, so there is no cache to be warm
                 started = time.perf_counter()
                 ans = qa.ask(q["question"], [])
                 wall = time.perf_counter() - started
@@ -136,6 +153,7 @@ def main() -> int:
                 ok = not ans.error
                 row = {
                     "run_id": run_id, "ts": datetime.now().isoformat(timespec="seconds"), "model": settings.model,
+                    "engine": settings.engine,
                     "effort": settings.effort, "cell": args.cell, "corpus_tokens": tokens, "round": rnd,
                     "question_id": q["id"], "kind": q.get("kind", ""), "cache_state": intended,
                     "cache_observed": "warm" if ans.tokens["cache_read"] > 0 else "cold", "ok": ok,
@@ -149,6 +167,10 @@ def main() -> int:
                     "numbers": {"checked": len(ans.check.numbers) if ans.check else 0,
                                 "flagged": len(ans.check.numbers_flagged) if ans.check else 0},
                     "request_id": ans.request_id,
+                    "retrieval": None if ans.retrieved is None else {
+                        "turns": len(ans.retrieved.turns), "meetings": len(ans.retrieved.meetings),
+                        "tokens_estimate": ans.retrieved.tokens_estimate,
+                        "answer_turns_found": [ans.retrieved.holds(*t.split("|")) for t in q.get("answer_turns", [])]},
                 }
                 if ans.check and (ans.check.numbers_flagged or ans.check.counts["bad"] or ans.check.counts["weak"]) \
                         or not row["task_success"]:  # keep the evidence for anything that looks wrong

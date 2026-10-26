@@ -1,4 +1,5 @@
-"""The Reports page of the Settings window: spending, your own usage, and the release scorecard."""
+"""The two Reports pages of the Settings window, one per engine (full context and RAG): spending, your own usage with
+that engine, and that engine's release scorecard."""
 from __future__ import annotations
 
 import tkinter as tk
@@ -9,6 +10,7 @@ from tkinter import filedialog, messagebox, ttk
 from . import guardrails, reports, storage, usagelog
 
 DECISION_STYLE = {"SHIP": "ok", "REVIEW": "weak", "HOLD": "bad"}
+ENGINE_NAMES = {"full": "Full context", "rag": "RAG"}
 RATING_LABEL = {"green": "good", "amber": "watch", "red": "fix", "unmeasured": "not measured", "info": "for information"}
 RATING_STYLE = {"green": "ok", "amber": "weak", "red": "bad", "unmeasured": "muted", "info": "muted"}
 
@@ -24,9 +26,10 @@ def money_text(value: float) -> str:
 class ReportsPanel(tk.Frame):
     """Scrolls, because the scorecard has about twenty rows. Everything is rebuilt by refresh()."""
 
-    def __init__(self, parent, app, colors: dict):
+    def __init__(self, parent, app, colors: dict, engine: str = "full"):
         super().__init__(parent, bg=colors["bg"])
-        self.app, self.C = app, colors
+        self.app, self.C, self.engine = app, colors, engine
+        self.engine_name = ENGINE_NAMES.get(engine, engine)
         self.opened: Path | None = None  # a scorecard the user chose with "Open report file"
         self.card_text = ""  # what "Copy summary" copies
 
@@ -106,7 +109,8 @@ class ReportsPanel(tk.Frame):
     def _spending(self) -> None:
         s = self.app.settings
         status = guardrails.spend_status(s)
-        self.heading("Spending", "Counted from your usage log, so the day and month totals still apply after a restart.")
+        self.heading("Spending, both engines together",
+                     "Counted from your usage log, so the day and month totals still apply after a restart.")
         for label, spent, limit in (("This session", self.app.tracker.total, s.max_session_cost_usd),
                                     ("Today", status.today, status.daily_limit),
                                     ("This month", status.month, status.monthly_limit)):
@@ -121,11 +125,16 @@ class ReportsPanel(tk.Frame):
             tk.Label(row, text=text, anchor="w", bg=self.C["bg"], fg=colour, font=self.app.F["small"]).pack(side="left")
 
     def _usage(self, rows: list[dict]) -> None:
-        summary = reports.summarize_usage(rows, days=30)
-        self.heading("Your usage, last 30 days")
+        summary = reports.summarize_usage(rows, days=30, engine=self.engine)
+        self.heading(f"Your questions answered with {self.engine_name}, last 30 days")
         if not summary.attempts:
-            self.note("Nothing yet. Ask a question and its speed and cost show up here.")
+            self.note(f"Nothing yet. Choose {self.engine_name} in the sidebar and ask a question; its speed and cost "
+                      "show up here.")
             return
+        if summary.no_match:
+            self.note(f"{summary.no_match} question{'s' if summary.no_match != 1 else ''} matched no passage and "
+                      "{} answered \"not found\" without calling Claude (no cost).".format(
+                          "were" if summary.no_match != 1 else "was"))
         failure = summary.failure_rate
         parts = [f"{summary.answers} answer{'s' if summary.answers != 1 else ''}",
                  f"median {seconds_text(summary.p50)}", f"slowest 5% {seconds_text(summary.p95)}",
@@ -144,12 +153,14 @@ class ReportsPanel(tk.Frame):
                           money_text(m.total_cost)), "") for m in summary.by_model], height=min(len(summary.by_model), 4))
 
     def _scorecard(self) -> None:
-        self.heading("Release scorecard", "How this version of MeetMiner did on its own checks (accuracy, speed, failures, cost, "
-                                          "safety). It comes from the evals in the repository.")
-        found = reports.find_scorecard(self.opened)
+        self.heading(f"Release scorecard: {self.engine_name}",
+                     f"How this version of MeetMiner did on its own checks with the {self.engine_name} engine "
+                     "(accuracy, speed, failures, cost, safety). It comes from the evals in the repository.")
+        found = reports.find_scorecard(self.opened, self.engine)
         if not found:
+            name = "latest-rag.json" if self.engine == "rag" else "latest.json"
             self.note("No scorecard is available on this PC. Use \"Open report file\" to load one "
-                      "(scorecards/latest.json in the repository).")
+                      f"(scorecards/{name} in the repository).")
             self.card_text = ""
         else:
             path, card = found

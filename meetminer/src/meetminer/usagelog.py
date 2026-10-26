@@ -1,7 +1,8 @@
 """The usage log (usage.csv): one line per attempt to answer a question, successful or not.
 
-Older versions of the app wrote no `status` or `error_kind` columns and logged only answers that came back. Such a file
-is upgraded in place the first time a line is added, and `read_rows` reads both layouts.
+Older versions of the app wrote no `status`, `error_kind` or `engine` columns and logged only answers that came back.
+Such a file is upgraded in place the first time a line is added, and `read_rows` reads every layout (a line without an
+engine was answered with full context, the only engine those versions had).
 """
 from __future__ import annotations
 
@@ -10,8 +11,9 @@ from datetime import datetime
 from pathlib import Path
 
 COLUMNS = ["time", "model", "effort", "input", "cache_write", "cache_read", "output", "cost_usd", "seconds",
-           "question", "status", "error_kind"]
+           "question", "status", "error_kind", "engine"]
 NUMERIC = ("input", "cache_write", "cache_read", "output")
+DEFAULTS = {"status": "ok", "engine": "full"}  # what an older log without these columns meant
 
 
 def read_rows(path: Path) -> list[dict]:
@@ -28,6 +30,7 @@ def read_rows(path: Path) -> list[dict]:
                         "question": raw.get("question") or "",
                         "status": (raw.get("status") or "ok").strip() or "ok",
                         "error_kind": (raw.get("error_kind") or "").strip(),
+                        "engine": (raw.get("engine") or "full").strip() or "full",
                     }
                     for name in NUMERIC:
                         row[name] = int(float(raw.get(name) or 0))
@@ -53,7 +56,7 @@ def _upgrade(path: Path) -> None:
             writer = csv.writer(f)
             writer.writerow(COLUMNS)
             for r in old:
-                writer.writerow([r.get(c, "ok" if c == "status" else "") for c in COLUMNS])
+                writer.writerow([r.get(c) or DEFAULTS.get(c, "") for c in COLUMNS])
         tmp.replace(path)
     except OSError:
         pass

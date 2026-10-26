@@ -2,6 +2,29 @@
 
 All notable changes to MeetMiner are recorded here. The format follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.2.0] - 2026-10-25
+
+A second engine: RAG, next to full context, with a switch in the window and its own reports.
+
+### Added
+- **RAG engine** (`retrieval.py`). A local keyword index (BM25 over speaker turns, light stemming, a short synonym
+  list) picks the passages that match the question, with one turn either side, up to about 6,000 tokens. Only those are
+  sent to Claude, in the same tagged-line format, so the citation and numbers checks work unchanged. The index is built
+  in memory and never written to disk. No embedding service and no new vendor.
+- **Engine switch** in the sidebar (Full context | RAG), remembered between sessions, and `--engine` on the command line
+  and on every eval. With large transcripts, the size notice offers a one-click switch to RAG.
+- **GR-RAG-01**: a RAG question that matches no passage is answered "not found" without calling the API ($0).
+- **Two reports pages**: Settings now has *Full-context reports* and *RAG reports*. Each shows the questions that
+  engine answered and that engine's scorecard; spending (shared by both) is on both.
+- **RET-01 retrieval eval** (`evals/retrieval_eval.py`, free): whether the turns that hold each answer are retrieved,
+  for four transcript sizes, and how much less text RAG sends.
+- **XL transcript size** (about 150,000 tokens, some twenty one-hour calls) for the speed and cost evals.
+- **RAG scorecard** (`scorecards/scorecard-rag.spec.yaml`, `latest-rag.md`), with a retrieval dimension.
+
+### Changed
+- The usage log has an `engine` column; older logs are read as full context and upgraded in place.
+- `answer_turns` in `evals/questions.yaml` record where each answer is, for measuring retrieval.
+
 ## [1.1.0] - 2026-10-25
 
 Guardrails, a release scorecard and a Reports page.

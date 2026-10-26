@@ -16,6 +16,9 @@ Status: **in place** (built, tested, in the app or the process), **partial** (ex
 | GR-INT-04 | Numbers and dates in an answer checked against the turn they are cited to | detective | in place (1.1.0) | [spec](GR-INT-04.md) |
 | GR-REL-03 | Request timeout with a clear message | preventive | in place (1.1.0) | [spec](GR-REL-03.md) |
 | GR-INJ-03 | Prompt-injection probe set, run as an eval | detective | in place (1.1.0) | [spec](GR-INJ-03.md) |
+| GR-RAG-01 | RAG: no match means no call (and $0); the index stays in memory, never on disk | preventive | in place (1.2.0) | [spec](GR-RAG-01.md) |
+| GR-RAG-02 | RAG: a cap on how much text one question sends (`rag_max_tokens`) | preventive | in place (1.2.0) | `config/default.yaml` |
+| GR-RAG-03 | RAG: embeddings for questions worded unlike the transcript | preventive | proposed | |
 | GR-COST-01 | Session spending limit | preventive | in place | in `engine.py`, Settings |
 | GR-COST-02 | `max_tokens` cap on every answer | preventive | in place | `config/default.yaml` |
 | GR-COST-03 | Warning when the transcripts pass 60,000 tokens | detective | in place | `app.py` notices |

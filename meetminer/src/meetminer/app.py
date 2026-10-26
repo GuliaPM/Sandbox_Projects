@@ -26,8 +26,8 @@ from tkinter import messagebox, ttk
 import anthropic
 
 from . import guardrails, storage
-from .engine import (Answer, ConfigError, CostTracker, MeetingQA, Settings, has_credentials, load_env, load_settings,
-                 with_overrides)
+from .engine import (ENGINES, Answer, ConfigError, CostTracker, MeetingQA, Settings, has_credentials, load_env,
+                     load_settings, with_overrides)
 from .reports_ui import ReportsPanel
 from .transcripts import CITE_RE, Meeting, load_meetings
 from .version import APP_NAME, __version__
@@ -142,9 +142,16 @@ def folder_signature(folder: Path) -> tuple:
 
 def caption_for(ans: Answer) -> str:
     t = ans.tokens
-    return (f"{ans.model}  ·  {ans.seconds:.1f}s  ·  ${ans.cost:.4f}   "
-            f"(new input {t['input']:,}, from cache {t['cache_read']:,}, written to cache {t['cache_write']:,}, "
-            f"output {t['output']:,})")
+    head = f"{ans.model}  ·  {ans.seconds:.1f}s  ·  ${ans.cost:.4f}   "
+    if ans.engine == "rag" and ans.retrieved is not None:
+        r = ans.retrieved
+        if not r.turns:
+            return "RAG  ·  no passage matched, nothing was sent  ·  $0.0000"
+        n = len(r.meetings)
+        return head + (f"(RAG: {len(r.turns)} passages from {n} meeting{'s' if n != 1 else ''}, "
+                       f"input {t['input']:,}, output {t['output']:,})")
+    return head + (f"(full context: new input {t['input']:,}, from cache {t['cache_read']:,}, "
+                   f"written to cache {t['cache_write']:,}, output {t['output']:,})")
 
 
 # --------------------------------------------------------------------------- the window
@@ -292,6 +299,20 @@ class App:
 
         models = [m for m, v in self.settings.price_table.items() if isinstance(v, dict)]
         self.model_ids = {MODEL_LABELS.get(m, m): m for m in models}
+        tk.Label(bottom, text="ENGINE", bg=C["side"], fg=C["muted"], font=self.F["small_bold"], anchor="w").pack(
+            fill="x", pady=(14, 4))
+        switch = tk.Frame(bottom, bg=C["line"], padx=1, pady=1)  # a one-pixel frame around the two halves
+        switch.pack(fill="x")
+        self.engine_buttons: dict[str, tk.Button] = {}
+        for key, label in ENGINES.items():
+            b = tk.Button(switch, text=label, command=lambda k=key: self.set_engine(k), relief="flat", bd=0,
+                          cursor="hand2", font=self.F["side"], padx=6, pady=5)
+            b.pack(side="left", fill="x", expand=True)
+            self.engine_buttons[key] = b
+        self.engine_note = tk.Label(bottom, text="", bg=C["side"], fg=C["muted"], font=self.F["small"], anchor="w")
+        self.engine_note.pack(fill="x", pady=(3, 0))
+        self._style_engine()
+
         tk.Label(bottom, text="ANSWER MODEL", bg=C["side"], fg=C["muted"], font=self.F["small_bold"], anchor="w").pack(
             fill="x", pady=(14, 4))
         self.model_var = tk.StringVar(value=MODEL_LABELS.get(self.settings.model, self.settings.model))
@@ -426,10 +447,11 @@ class App:
             items.append(("weak", f"Could not read {name}: {reason}", None))
         if self.env_note:
             items.append(("weak", self.env_note, None))
-        if self.prompt_tokens[0] > s.retrieval_threshold_tokens:
+        if self.prompt_tokens[0] > s.retrieval_threshold_tokens and s.engine == "full":
             items.append(("weak", f"Your transcripts add up to about {self.prompt_tokens[0]:,} tokens, above the "
-                                  f"{s.retrieval_threshold_tokens:,} this version is designed for. Every question "
-                                  "sends all of them, so answers get slower and cost more.", None))
+                                  f"{s.retrieval_threshold_tokens:,} full context is designed for. Every question "
+                                  "sends all of them, so answers get slower and cost more. The RAG engine sends only "
+                                  "the passages that match.", ("Switch to RAG", lambda: self.set_engine("rag"))))
         if self.tracker.capped:
             items.append(("bad", f"Session spending limit reached (${self.tracker.total:.2f} of "
                                  f"${s.max_session_cost_usd:.2f}). Raise it in Settings, or restart the app.",
@@ -687,7 +709,7 @@ class App:
             self._put("Check these numbers against the transcript:\n", "warn")
             for line in guardrails.describe_numbers(report.numbers):
                 self._put(f"   •  {line}\n", "warn")
-        if ans.tokens["output"] or ans.tokens["input"] or ans.tokens["cache_read"]:
+        if ans.tokens["output"] or ans.tokens["input"] or ans.tokens["cache_read"] or ans.retrieved is not None:
             self._put(caption_for(ans) + "   ", "caption")
             tag = f"copy{answer_id}"
             self._put("Copy answer", "link", tag)
@@ -820,6 +842,26 @@ class App:
         threading.Thread(target=self._count_tokens, daemon=True).start()
         self.update_cost()
         self.input.focus_set()
+
+    def _style_engine(self) -> None:
+        """The chosen half of the engine switch is filled in, and the line under it says what that engine sends."""
+        for key, b in self.engine_buttons.items():
+            on = key == self.settings.engine
+            b.configure(bg=C["accent"] if on else C["bg"], fg="#ffffff" if on else C["text"],
+                        activebackground=C["accent_dark"] if on else C["hover"],
+                        activeforeground="#ffffff" if on else C["text"])
+        self.engine_note.configure(text="Sends all transcripts with each question" if self.settings.engine == "full"
+                                   else "Sends only the passages that match")
+
+    def set_engine(self, engine: str) -> None:
+        """Switch between full context and RAG. Remembered for next time. Not while an answer is on its way, so the
+        answer is logged under the engine that actually produced it."""
+        if engine == self.settings.engine or engine not in ENGINES or self.busy:
+            return
+        storage.update_user_settings(engine=engine)
+        self._replace_settings(engine=engine)
+        self._style_engine()
+        self.refresh_notices()
 
     def confirm_model_switch(self, new_model: str) -> bool:
         """GR-COST-06: before using a model that costs more per question, say how much more, and ask."""
@@ -955,14 +997,15 @@ class SettingsDialog(tk.Toplevel):
         self.tabs.pack(fill="both", expand=True, pady=(8, 0))
         general = tk.Frame(self.tabs, bg=C["bg"], padx=app.px(14), pady=app.px(4))
         guard = tk.Frame(self.tabs, bg=C["bg"], padx=app.px(14), pady=app.px(4))
-        self.reports_panel = ReportsPanel(self.tabs, app, C)
+        self.reports_panel = ReportsPanel(self.tabs, app, C, engine="full")
+        self.rag_reports_panel = ReportsPanel(self.tabs, app, C, engine="rag")
         self.tabs.add(general, text="  General  ")
         self.tabs.add(guard, text="  Guardrails  ")
-        self.tabs.add(self.reports_panel, text="  Reports  ")
-        if focus == "reports":
-            self.tabs.select(self.reports_panel)
-        elif focus == "guardrails":
-            self.tabs.select(guard)
+        self.tabs.add(self.reports_panel, text="  Full-context reports  ")
+        self.tabs.add(self.rag_reports_panel, text="  RAG reports  ")
+        page = {"reports": self.reports_panel, "rag-reports": self.rag_reports_panel, "guardrails": guard}.get(focus or "")
+        if page is not None:
+            self.tabs.select(page)
 
         def heading(parent, text):
             tk.Label(parent, text=text, bg=C["bg"], fg=C["text"], font=F["bold"], anchor="w").pack(fill="x", pady=(14, 2))
@@ -1041,7 +1084,8 @@ class SettingsDialog(tk.Toplevel):
                 ("GR-COST-06", "Confirmation before a more expensive model", "on" if s.confirm_model_switch else "off"),
                 ("GR-INT-04", "Numbers and dates checked against the turn they are cited to", "on"),
                 ("GR-REL-03", "A request that gets no answer is given up after "
-                              f"{s.request_timeout_seconds:g} seconds (up to {s.max_retries} retries)", "on")):
+                              f"{s.request_timeout_seconds:g} seconds (up to {s.max_retries} retries)", "on"),
+                ("GR-RAG-01", "RAG: when no passage matches, nothing is sent and nothing is spent", "on")):
             row = tk.Frame(guard, bg=C["bg"])
             row.pack(fill="x", pady=(3, 0))
             tk.Label(row, text=gid, width=11, anchor="w", bg=C["bg"], fg=C["muted"], font=F["small_bold"]).pack(side="left")
@@ -1174,7 +1218,11 @@ class SettingsDialog(tk.Toplevel):
             return
         self.app.set_spending_limit(dollars)
         self.limit_var.set(f"{dollars:.2f}")
+        self.refresh_reports()
+
+    def refresh_reports(self) -> None:
         self.reports_panel.refresh()
+        self.rag_reports_panel.refresh()
 
     def save_period(self, name: str, var: tk.StringVar) -> None:
         """The daily or monthly limit (GR-COST-05). Unlike the session limit, 0 is allowed and means no limit."""
@@ -1187,7 +1235,7 @@ class SettingsDialog(tk.Toplevel):
             return
         self.app.set_period_limit(name, dollars)
         var.set(f"{dollars:.2f}")
-        self.reports_panel.refresh()
+        self.refresh_reports()
 
     def save_confirm(self) -> None:
         self.app.set_confirm_model_switch(self.confirm_var.get())

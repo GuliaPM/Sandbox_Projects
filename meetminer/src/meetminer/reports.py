@@ -48,10 +48,11 @@ class UsageSummary:
     average_cost: float = 0.0
     total_cost: float = 0.0
     by_model: list[ModelStats] = field(default_factory=list)
+    no_match: int = 0  # RAG questions answered "not found" without calling Claude (nothing matched)
 
     @property
     def attempts(self) -> int:
-        return self.answers + self.failed
+        return self.answers + self.failed + self.no_match
 
     @property
     def failure_rate(self) -> float | None:
@@ -60,7 +61,9 @@ class UsageSummary:
         return self.system_failed / counted if counted else None
 
 
-def summarize_usage(rows: list[dict], now: datetime | None = None, days: int = 30) -> UsageSummary:
+def summarize_usage(rows: list[dict], now: datetime | None = None, days: int = 30,
+                    engine: str | None = None) -> UsageSummary:
+    """The last `days` days of the log; with `engine`, only the questions that engine answered."""
     from .engine import USER_FIXABLE  # engine does not import this module, so this is only a late import for tidiness
 
     now = now or datetime.now()
@@ -69,7 +72,10 @@ def summarize_usage(rows: list[dict], now: datetime | None = None, days: int = 3
     seconds: list[float] = []
     per_model: dict[str, list[dict]] = {}
     for row in rows:
-        if row["time"] < since:
+        if row["time"] < since or (engine and row.get("engine", "full") != engine):
+            continue
+        if row["error_kind"] == "no_match":  # RAG answered "not found" without a call: nothing to time or cost
+            out.no_match += 1
             continue
         if row["status"] == "ok":
             out.answers += 1
@@ -98,16 +104,17 @@ class ScorecardError(Exception):
     """The file is not a scorecard this version of the app can show; the message says why."""
 
 
-def _checkout_scorecard() -> Path:
-    root = storage._checkout_root()
-    return (root / "scorecards" / "latest.json") if root else Path()
+def _suffix(engine: str) -> str:
+    return "-rag" if engine == "rag" else ""  # each engine has its own scorecard; full context keeps the plain names
 
 
-def scorecard_candidates() -> list[Path]:
+def scorecard_candidates(engine: str = "full") -> list[Path]:
     """Where to look, in order: one you saved for yourself, the repository's latest one (from a source checkout),
     and the one that was packaged with this release."""
-    return [storage.data_dir() / "reports" / SCORECARD_FILE, _checkout_scorecard(),
-            storage.resource_dir() / "reports" / "release-scorecard.json"]
+    root, sfx = storage._checkout_root(), _suffix(engine)
+    return [storage.data_dir() / "reports" / f"scorecard{sfx}.json",
+            (root / "scorecards" / f"latest{sfx}.json") if root else Path(),
+            storage.resource_dir() / "reports" / f"release-scorecard{sfx}.json"]
 
 
 def source_label(path: Path) -> str:
@@ -139,8 +146,8 @@ def load_scorecard(path: Path) -> dict:
     return card
 
 
-def find_scorecard(extra: Path | None = None) -> tuple[Path, dict] | None:
-    for path in ([extra] if extra else []) + scorecard_candidates():
+def find_scorecard(extra: Path | None = None, engine: str = "full") -> tuple[Path, dict] | None:
+    for path in ([extra] if extra else []) + scorecard_candidates(engine):
         if path and path.is_file():
             try:
                 return path, load_scorecard(path)
@@ -153,7 +160,8 @@ def headline(card: dict) -> str:
     when = str(card.get("generated", ""))[:10]
     total = card.get("total")
     score = f"{total:.0f}/100" if isinstance(total, (int, float)) else "no score"
-    return f"{card.get('app', 'MeetMiner')} {card.get('version', '')} · {card.get('decision', '?')} · {score}" + \
+    engine = {"rag": " (RAG)", "full": " (full context)"}.get(str(card.get("engine", "")), "")
+    return f"{card.get('app', 'MeetMiner')} {card.get('version', '')}{engine} · {card.get('decision', '?')} · {score}" + \
            (f" · measured {when}" if when else "")
 
 

@@ -1,7 +1,7 @@
 """Corpora of different sizes for the speed and cost evals (OPS-01).
 
-Cell S is the two fictional sample calls. Cells M (about 15,000 tokens) and L (about 60,000, the size at which the app
-starts to warn) add synthetic filler meetings in Otter's format. The filler is deliberately boring and never touches the
+Cell S is the two fictional sample calls. Cells M (about 15,000 tokens), L (about 60,000, the size at which the app
+starts to warn) and XL (about 150,000, some twenty one-hour calls) add synthetic filler meetings in Otter's format. The filler is deliberately boring and never touches the
 facts the eval questions ask about (dates, amounts, names, "launch", "beta", "budget"...), so the expected answers do not
 change. It is deterministic: the same size always gives the same files.
 """
@@ -14,7 +14,8 @@ from typing import Callable
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES = ROOT / "samples" / "transcripts"
-TARGET_TOKENS = {"S": 0, "M": 15_000, "L": 60_000}  # S is whatever the samples measure (about 3,900)
+# S is whatever the samples measure (about 3,900). XL is about 20 one-hour calls, the scenario RAG is for.
+TARGET_TOKENS = {"S": 0, "M": 15_000, "L": 60_000, "XL": 150_000}
 
 TITLES = ["Facilities review", "Hiring sync", "Month end close", "Support triage", "Travel policy review",
           "Office move planning", "Event planning", "Procurement check-in", "Wellness program", "Recruiting pipeline",
@@ -72,11 +73,11 @@ def make_meeting(index: int, words: int = 700) -> tuple[str, str]:
 
 
 def build_cell(cell: str, workdir: Path, measure: Callable[[Path], int] | None = None) -> Path:
-    """The folder of transcripts for cell S, M or L. For M and L the filler is added to a copy of the samples, then
+    """The folder of transcripts for cell S, M, L or XL. For the others the filler is added to a copy of the samples, then
     `measure(folder)` (prompt tokens) is used, if given, to bring the size within about 10% of the target."""
     cell = cell.upper()
     if cell not in TARGET_TOKENS:
-        raise ValueError(f"unknown cell {cell!r}; use S, M or L")
+        raise ValueError(f"unknown cell {cell!r}; use S, M, L or XL")
     if cell == "S":
         return SAMPLES
     folder = workdir / f"cell-{cell}"

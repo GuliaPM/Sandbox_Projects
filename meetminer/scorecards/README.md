@@ -5,12 +5,15 @@ performs (speed, failures, cost), whether it is safe with keys and instructions,
 The scorecard turns that into one decision: **SHIP**, **REVIEW** or **HOLD**, and says which check caused it.
 
 ```
-python scorecards/build_scorecard.py                 gather the evidence, score it, write latest.json and latest.md
+python scorecards/build_scorecard.py                 full-context engine: write latest.json and latest.md
+python scorecards/build_scorecard.py --engine rag    RAG engine: write latest-rag.json and latest-rag.md
 python scorecards/build_scorecard.py --skip-sandbox  leave out the install test (it opens windows for a minute)
 ```
 
-The latest result is [`latest.md`](latest.md) (readable) and `latest.json` (what the app's Reports page shows). Each run
-is also kept in [`history/`](history/).
+Each engine has its own scorecard: [`latest.md`](latest.md) for full context and [`latest-rag.md`](latest-rag.md) for
+RAG (and the `.json` files the app's two Reports pages show). Each run is also kept in [`history/`](history/). The RAG
+card ([`scorecard-rag.spec.yaml`](scorecard-rag.spec.yaml)) adds a retrieval dimension (RET-01: are the answer turns
+retrieved at each transcript size?) and sets its cost targets for an engine that cannot use the prompt cache.
 
 ## How it is scored
 

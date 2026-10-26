@@ -8,10 +8,11 @@ are built the way they are.
 | Module | Responsibility | Depends on |
 |---|---|---|
 | `transcripts.py` | Parse Otter `.txt` exports into meetings and turns; render the prompt text; check citations | standard library, PyYAML |
+| `retrieval.py` | The RAG engine's retrieval: BM25 index over speaker turns (in memory), choosing and rendering the excerpts | `transcripts` |
 | `storage.py` | Where files live; `settings.json`; the DPAPI-encrypted API key; default transcripts folder | standard library |
 | `usagelog.py` | The usage log (`usage.csv`): one line per attempt, answered or failed; reads old layouts | standard library |
 | `guardrails.py` | Daily and monthly spending limits, the model-switch cost comparison, the numbers and dates check | `transcripts`, `usagelog` |
-| `engine.py` | Merge settings; build the answer prompt; call the Claude API with a timeout; count tokens and cost; log usage | `transcripts`, `storage`, `usagelog`, `guardrails`, `anthropic` |
+| `engine.py` | Merge settings; build the answer prompt for either engine; call the Claude API with a timeout; count tokens and cost; log usage | `transcripts`, `retrieval`, `storage`, `usagelog`, `guardrails`, `anthropic` |
 | `reports.py` | Statistics over the usage log (p50, p95, failure rate, cost per answer) and the scorecard file | `storage`, `usagelog` |
 | `reports_ui.py` | The Reports page of the Settings window | `reports`, `guardrails`, `usagelog` |
 | `app.py` | The Tk window: chat, reader, Settings (General, Guardrails, Reports), first-run checklist; runs the engine in a background thread | `engine`, `guardrails`, `reports_ui`, `storage`, `transcripts` |
@@ -41,6 +42,29 @@ produce the Windows installer.
 6. **Show.** `app.py` renders the model's light markdown, turns each tag into a coloured clickable label, and on a click
    opens that meeting in the reader with the cited turn and the quoted words highlighted.
 
+### Two engines: full context and RAG
+
+The switch in the sidebar picks how the transcripts reach Claude. Everything after the call (citation check, numbers
+check, guardrails, usage log) is the same for both.
+
+| | Full context | RAG |
+|---|---|---|
+| What is sent | every transcript, every question | the passages that match, with one turn either side, up to about 6,000 tokens |
+| How it is picked | nothing to pick | BM25 keyword ranking over speaker-turn chunks (`retrieval.py`), light stemming, a short synonym list, and the best passage of every other meeting that matches well |
+| Prompt cache | yes: the transcripts block is identical every time | no: the excerpts change with every question, and a cache write costs 1.25x |
+| Can it miss the answer? | no, everything is there | yes, if retrieval does not pick the turn (measured by RET-01) |
+| Grows with the transcripts | cost and latency | almost nothing: about 3,000 tokens whatever the size |
+| Not found | the model says so | the model says so, or, when no passage matches at all, the engine answers without a call (GR-RAG-01) |
+
+The retrieved turns are written in exactly the format the full-context engine uses (`[Meeting, Speaker 2, 04:09] ...`),
+grouped by meeting in time order with `[... turns not shown ...]` at the gaps, so the citation tags the model copies
+resolve to the same turns and the checker needs no change. The system rules are the same, except that they say the text
+is excerpts and that "not found" means "not in these excerpts".
+
+The index is built in memory the first time a RAG question is asked (a few milliseconds even for 100 meetings), rebuilt
+when the transcripts are reloaded, and never written to disk. There is no embedding model and no extra service: the only
+party that sees transcript text is still Anthropic, and it now sees less of it per question.
+
 ### Before and after the call
 
 Around the call itself, the engine does three more things (each is a guardrail with a spec in `../guardrails/`):
@@ -54,13 +78,14 @@ Around the call itself, the engine does three more things (each is a guardrail w
 
 In the window, switching the answer model asks first when the new model costs more (GR-COST-06).
 
-### Why the whole corpus goes in every time
+### When to use which engine
 
-For a few hours of meetings the total is a few tens of thousands of tokens. Sending it all costs less than a retrieval
-pipeline's complexity, cannot miss a relevant passage, and caching makes follow-ups about ten times cheaper on the
-transcript part. The engine exposes one seam, `get_context(meetings, question, history)`, that returns the text to send;
-a retriever (speaker-turn chunks, BM25 plus embeddings, per-meeting summaries) would replace it. The app already warns
-when the transcripts pass `retrieval_threshold_tokens`.
+For a few hours of meetings, full context is the simpler choice: it cannot miss a passage, and caching makes follow-ups
+about ten times cheaper on the transcript part. As the transcripts grow, every question costs more and takes longer, and
+the evals show accuracy dipping as the context fills with unrelated meetings. RAG keeps each question small whatever the
+archive size, at the risk of not retrieving the right turn. The app warns when the transcripts pass
+`retrieval_threshold_tokens` (60,000) and offers to switch to RAG. The measured comparison is in the README and in the
+two scorecards.
 
 ### What the citation checker deliberately does not trust
 

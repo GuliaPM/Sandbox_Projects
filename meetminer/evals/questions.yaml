@@ -2,6 +2,7 @@
 # customer onboarding call). Every expected fact below was written into those files, so the answers are known.
 #   expect_all    every text must appear in the answer (case-insensitive)
 #   expect_files  each text must match the file name of at least one meeting cited in the answer
+#   answer_turns  the turns that hold the answer (meeting|start), for measuring RAG retrieval
 #   not_found     the answer must say "Not found in the transcripts" (the facts are NOT in the data)
 # Every question also fails if any citation or quote is flagged as not found in the transcripts.
 
@@ -10,48 +11,56 @@
   question: "When was the launch moved to, and why was it moved?"
   expect_all: ["14", "payment"]
   expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
 
 - id: qa-budget
   kind: lookup
   question: "How much budget was approved for QA contractor help?"
   expect_all: ["18,000"]
   expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
 
 - id: beta-group
   kind: lookup
   question: "How many customers are in the beta, and when do the invitations go out?"
   expect_all: ["25", "nov"]
   expect_files: ["planning"]
+  answer_turns: ["Product planning call|00:00"]
 
 - id: api-spec-owner
   kind: commitment
   question: "Who owns the API spec, and when is it due?"
   expect_all: ["marc", "30"]
   expect_files: ["planning"]
+  answer_turns: ["Product planning call|01:35"]
 
 - id: planning-actions
   kind: commitment
   question: "What action items were assigned at the end of the planning call?"
   expect_all: ["spec", "mockup", "email"]
   expect_files: ["planning"]
+  answer_turns: ["Product planning call|06:30"]
 
 - id: seat-pricing
   kind: lookup
   question: "What is the price per seat, and what discount applies to annual prepayment?"
   expect_all: ["25", "10"]
   expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|00:00"]
 
 - id: security-documents
   kind: lookup
   question: "What documents did the customer ask for before signing?"
   expect_all: ["soc 2", "data processing"]
   expect_files: ["onboarding"]
+  answer_turns: ["Customer onboarding call|02:15"]
 
 - id: cross-meeting
   kind: comparison
   question: "Which meeting discussed a security document and which discussed a QA budget?"
   expect_all: ["soc 2", "18,000"]
   expect_files: ["planning", "onboarding"]
+  answer_turns: ["Customer onboarding call|02:15", "Product planning call|00:00"]
 
 - id: trap-competitor
   kind: not_in_data

@@ -29,7 +29,9 @@ REQUIRED = ["README.md", "LICENSE", "pyproject.toml", "src/meetminer/__init__.py
             "src/meetminer/app.py", "src/meetminer/engine.py", "src/meetminer/config/default.yaml",
             "tests/test_core.py", "tests/test_guardrails.py", "samples/transcripts", "packaging/build.py",
             "docs/architecture.md", "guardrails/README.md", "scorecards/scorecard.spec.yaml",
-            "scorecards/build_scorecard.py", "evals/OPS-01.md", "evals/probes/probes.yaml"]
+            "scorecards/build_scorecard.py", "evals/OPS-01.md", "evals/probes/probes.yaml",
+            "src/meetminer/retrieval.py", "tests/test_rag.py", "evals/retrieval_eval.py", "scorecards/scorecard-rag.spec.yaml",
+            "guardrails/GR-RAG-01.md"]
 
 WORKFLOW = f"""\
 # Optional: runs the unit tests for {FOLDER_NAME}/ on every push or pull request that touches it.

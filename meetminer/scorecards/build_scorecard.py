@@ -1,6 +1,7 @@
 """Build the MeetMiner release scorecard from evidence and write scorecards/latest.json and latest.md.
 
     python scorecards/build_scorecard.py                  gather everything and score it (takes a few minutes)
+    python scorecards/build_scorecard.py --engine rag     the same for the RAG engine (latest-rag.json, latest-rag.md)
     python scorecards/build_scorecard.py --skip-sandbox   leave out the install test (it opens windows)
     python scorecards/build_scorecard.py --skip-tests --skip-scan --skip-sandbox    only score the eval results
 
@@ -35,7 +36,15 @@ import opsstats  # noqa: E402
 from meetminer.version import APP_NAME, __version__  # noqa: E402
 
 RESULTS = ROOT / "evals" / "results"
-SPEC = HERE / "scorecard.spec.yaml"
+SPECS = {"full": HERE / "scorecard.spec.yaml", "rag": HERE / "scorecard-rag.spec.yaml"}
+SPEC = SPECS["full"]
+ENGINE_NAMES = {"full": "full context", "rag": "RAG"}
+CELLS = ("S", "M", "L", "XL")
+
+
+def kind(prefix: str, engine: str) -> str:
+    """Result files of the RAG engine carry -rag after their kind; full context keeps the original names."""
+    return f"{prefix}-rag" if engine == "rag" else prefix
 RATING_TEXT = {"green": "good", "amber": "watch", "red": "fix", "unmeasured": "not measured", "info": "info"}
 
 
@@ -57,6 +66,9 @@ class Evidence:
     sandbox: tuple | None = None
     docs: tuple | None = None
     other_notes: list = field(default_factory=list)  # what the evals found for the models that are not the default one
+    engine: str = "full"
+    retrieval: dict | None = None  # RAG: evals/retrieval_eval.py results
+    retrieval_file: str = ""
 
 
 def newest(pattern: str) -> Path | None:
@@ -139,18 +151,23 @@ def check_docs() -> tuple:
 
 def gather(spec: dict, args) -> Evidence:
     model = args.model or spec["default_model"]
-    ev = Evidence(model=model, cell=spec.get("ops_cell", "S"))
+    engine = getattr(args, "engine", "full")
+    ev = Evidence(model=model, cell=spec.get("ops_cell", "S"), engine=engine)
     ops_paths = [Path(p) for p in args.ops] if args.ops else [
-        p for p in (newest(f"ops-{m}-{c}-*.jsonl") for m in sorted({model, *spec_models()}) for c in "SML") if p]
+        p for p in (newest(f"{kind('ops', engine)}-{m}-{c}-*.jsonl") for m in sorted({model, *spec_models()})
+                    for c in CELLS) if p]
     for path in ops_paths:
         ev.ops += opsstats.summarize(opsstats.load_rows([path]))
         ev.ops_files.append(rel(path))
-    q = Path(args.quality) if args.quality else newest(f"quality-{model}-*.json")
+    q = Path(args.quality) if args.quality else newest(f"{kind('quality', engine)}-{model}-*.json")
     if q and q.is_file():
         ev.quality, ev.quality_file = json.loads(q.read_text(encoding="utf-8")), rel(q)
-    p = Path(args.probes) if args.probes else newest(f"probes-{model}-*.json")
+    p = Path(args.probes) if args.probes else newest(f"{kind('probes', engine)}-{model}-*.json")
     if p and p.is_file():
         ev.probes, ev.probes_file = json.loads(p.read_text(encoding="utf-8")), rel(p)
+    r = newest("retrieval-*.json") if engine == "rag" else None
+    if r:
+        ev.retrieval, ev.retrieval_file = json.loads(r.read_text(encoding="utf-8")), rel(r)
     if not args.skip_tests:
         print("running the unit tests...", flush=True)
         ev.tests = run_unit_tests()
@@ -161,7 +178,7 @@ def gather(spec: dict, args) -> Evidence:
         print("running the install test...", flush=True)
         ev.sandbox = run_sandbox()
     ev.docs = check_docs()
-    ev.other_notes = other_model_findings([m for m in spec_models() if m != model])
+    ev.other_notes = other_model_findings([m for m in spec_models() if m != model], engine)
     return ev
 
 
@@ -169,11 +186,11 @@ def spec_models() -> list[str]:
     return ["claude-sonnet-5-5"]  # models whose results are shown as information next to the default one
 
 
-def other_model_findings(models: list[str]) -> list[str]:
+def other_model_findings(models: list[str], engine: str = "full") -> list[str]:
     """One note per other model: what its quality eval and injection probes found (information, not scored)."""
     notes = []
     for model in models:
-        q = newest(f"quality-{model}-*.json")
+        q = newest(f"{kind('quality', engine)}-{model}-*.json")
         if q:
             data = json.loads(q.read_text(encoding="utf-8"))
             cites = [c for o in data["outcomes"] for c in o["citations"]]
@@ -181,7 +198,7 @@ def other_model_findings(models: list[str]) -> list[str]:
             notes.append(f"{model}, quality eval: {data['passed']}/{data['questions']} questions passed; citations "
                          f"{cites.count('ok')} ok, {cites.count('weak')} weak, {cites.count('bad')} bad"
                          + (f"; failed: {'; '.join(failed)}" if failed else "") + f" [{rel(q)}]")
-        p = newest(f"probes-{model}-*.json")
+        p = newest(f"{kind('probes', engine)}-{model}-*.json")
         if p:
             data = json.loads(p.read_text(encoding="utf-8"))
             notes.append(f"{model}, injection probes: {data['resisted']}/{data['probes']} resisted [{rel(p)}]")
@@ -203,7 +220,7 @@ def _ratio(num: int, den: int, label: str = "") -> Measure | None:
 
 
 def _group(ev: Evidence, cell: str, state: str, model: str | None = None):
-    return opsstats.find(ev.ops, model or ev.model, cell, state)
+    return opsstats.find(ev.ops, model or ev.model, cell, state, ev.engine)
 
 
 def _tests_passing(ev: Evidence, names: list[str]) -> Measure | None:
@@ -221,6 +238,8 @@ KEY_TESTS = ["test_key_is_encrypted_on_disk_and_round_trips", "test_key_hint_nev
 LIMIT_TESTS = ["test_daily_limit_reached", "test_monthly_limit_reached_even_when_today_is_fine",
                "test_the_limit_blocks_the_call_and_survives_a_restart", "test_spending_limit_is_saved_and_enforced",
                "test_a_daily_limit_that_is_reached_pauses_questions_and_says_so"]
+RAG_TESTS = ["test_no_match_answers_not_found_without_calling_the_api", "test_a_rag_question_that_matches_nothing_costs_nothing",
+             "test_the_index_never_touches_the_disk", "test_rag_sends_only_the_excerpts_and_no_cache_breakpoint"]
 
 
 def measure(source: str, ev: Evidence) -> Measure | None:
@@ -256,13 +275,15 @@ def measure(source: str, ev: Evidence) -> Measure | None:
     if kind == "ops":
         cell = ev.cell
         name = what
-        if name.endswith(("_M", "_L")):
-            name, cell = name[:-2], name[-1]
-        state = "cold" if name == "p95_cold" else "warm" if name.startswith("p95") else "all"
+        for size in ("_XL", "_M", "_L"):
+            if name.endswith(size):
+                name, cell = name[: -len(size)], size[1:]
+                break
+        state = {"p95_cold": "cold", "p95_warm": "warm"}.get(name, "all")  # RAG's plain "p95" covers every attempt
         g = _group(ev, cell, state)
         if g is None:
             return None
-        if name in ("p95_warm", "p95_cold"):
+        if name in ("p95_warm", "p95_cold", "p95"):
             return Measure(g.p95, f"{g.p95:.2f} s", f"n={g.attempts}") if g.p95 is not None else None
         if name == "failure_rate":
             if g.failure_rate is None:
@@ -274,6 +295,19 @@ def measure(source: str, ev: Evidence) -> Measure | None:
         if name == "cost_per_success":
             return Measure(g.cost_per_success, opsstats.fmt_usd(g.cost_per_success),
                            f"${g.cost_total:.4f} over {g.attempts} attempts") if g.cost_per_success is not None else None
+    if kind == "retrieval" and ev.retrieval:
+        metric, _, cell = what.rpartition("_")
+        r = ev.retrieval["cells"].get(cell)
+        if r is None:
+            return None
+        if metric == "found":
+            return _ratio(r["all_answer_turns_found"], r["questions"], f" ({r['meetings']} meetings)")
+        if metric == "share":
+            share = r["share_of_full_context"]
+            return Measure(share, f"{share * 100:.0f}% (about {r['avg_tokens_sent_est']:,} of "
+                                  f"{r['full_context_tokens_est']:,} tokens)", ev.retrieval_file)
+        if metric == "traps":
+            return _ratio(r["traps_without_a_call"], r["traps"], " ended without a call")
     if kind == "probes" and ev.probes:
         misses = ev.probes["probes"] - ev.probes["resisted"]
         return Measure(misses, f"{ev.probes['resisted']}/{ev.probes['probes']} resisted", ev.probes_file)
@@ -288,6 +322,8 @@ def measure(source: str, ev: Evidence) -> Measure | None:
             return _tests_passing(ev, KEY_TESTS)
         if what == "spend_limits":
             return _tests_passing(ev, LIMIT_TESTS)
+        if what == "rag_no_match":
+            return _tests_passing(ev, RAG_TESTS)
         scope = {k: v for k, v in ev.tests.items() if what == "all" or k.startswith("test_guardrails.")}
         ran = {k: v for k, v in scope.items() if v != "skipped"}
         return _ratio(sum(v == "ok" for v in ran.values()), len(ran), (f", {len(scope) - len(ran)} skipped" if len(scope) != len(ran) else ""))
@@ -368,13 +404,17 @@ def build(spec: dict, ev: Evidence) -> dict:
     else:
         decision = "REVIEW"
     notes = ["The operational targets are proposed starting points (evals/OPS-01.md); the numbers are measured, the targets are choices."]
+    notes += list(spec.get("notes", []))
     notes += other_model_notes(ev) + ev.other_notes
     return {
-        "schema": 1, "app": APP_NAME, "version": __version__, "generated": datetime.now().isoformat(timespec="seconds"),
+        "schema": 1, "app": APP_NAME, "version": __version__, "engine": ev.engine,
+        "generated": datetime.now().isoformat(timespec="seconds"),
         "decision": decision, "total": total, "gates_failed": gates_failed, "gates_unmeasured": gates_open,
-        "unmeasured": unmeasured, "config": {"model": ev.model, "cell": ev.cell, "transcripts": "fictional samples (samples/transcripts)"},
+        "unmeasured": unmeasured, "config": {"model": ev.model, "engine": ev.engine, "cell": ev.cell,
+                                             "transcripts": "fictional samples (samples/transcripts)"},
         "dimensions": dimensions, "notes": notes, "guardrails": spec.get("guardrails", []),
         "evidence": {"ops": ev.ops_files, "quality": ev.quality_file, "probes": ev.probes_file,
+                     "retrieval": ev.retrieval_file or None,
                      "unit_tests": None if ev.tests is None else f"{sum(v == 'ok' for v in ev.tests.values())}/{len(ev.tests)} ok",
                      "scan": ev.scan[1] if ev.scan else None, "sandbox": ev.sandbox[1] if ev.sandbox else None},
     }
@@ -383,7 +423,7 @@ def build(spec: dict, ev: Evidence) -> dict:
 def other_model_notes(ev: Evidence) -> list[str]:
     notes = []
     for g in ev.ops:
-        if g.cache_state != "all" or g.model == ev.model:  # the default model's own rows are already in the table
+        if g.cache_state != "all" or g.model == ev.model or g.engine != ev.engine:  # the table has the default model's
             continue
         notes.append(f"{g.model}, cell {g.cell} ({g.corpus_tokens:,} tokens, {g.attempts} attempts): p95 {opsstats.fmt_s(g.p95)}, "
                      f"failure rate {opsstats.fmt_pct(g.failure_rate)}, {opsstats.fmt_usd(g.cost_per_success)} per successful task.")
@@ -391,9 +431,11 @@ def other_model_notes(ev: Evidence) -> list[str]:
 
 
 def markdown(card: dict) -> str:
-    lines = [f"# {card['app']} {card['version']} release scorecard", "",
+    engine = ENGINE_NAMES.get(card.get("engine", "full"), "full context")
+    lines = [f"# {card['app']} {card['version']} release scorecard: {engine} engine", "",
              f"**Decision: {card['decision']}**  ·  score {card['total']:.0f}/100  ·  measured {card['generated'][:10]}  ·  "
-             f"configuration: {card['config']['model']}, cell {card['config']['cell']} ({card['config']['transcripts']})", ""]
+             f"configuration: {card['config']['model']}, {engine}, cell {card['config']['cell']} "
+             f"({card['config']['transcripts']})", ""]
     if card["gates_failed"]:
         lines += ["Blocked by: " + "; ".join(card["gates_failed"]), ""]
     if card["gates_unmeasured"]:
@@ -406,7 +448,10 @@ def markdown(card: dict) -> str:
         lines.append("")
     lines += ["## Evidence", ""]
     ev = card["evidence"]
-    lines += [f"- Operational runs: {', '.join(ev['ops']) or 'none'}", f"- Quality eval: {ev['quality'] or 'none'}",
+    lines += [f"- Operational runs: {', '.join(ev['ops']) or 'none'}", f"- Quality eval: {ev['quality'] or 'none'}"]
+    if ev.get("retrieval"):
+        lines.append(f"- Retrieval eval: {ev['retrieval']}")
+    lines += [
               f"- Injection probes: {ev['probes'] or 'none'}", f"- Unit tests: {ev['unit_tests'] or 'not run'}",
               f"- Release scan: {ev['scan'] or 'not run'}", f"- Install test: {ev['sandbox'] or 'not run'}", ""]
     lines += ["## Notes", ""] + [f"- {n}" for n in card["notes"]]
@@ -418,6 +463,8 @@ def markdown(card: dict) -> str:
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--engine", choices=list(SPECS), default="full",
+                        help="which engine to score: full context (latest.json) or RAG (latest-rag.json)")
     parser.add_argument("--model", help="the configuration to judge (default: default_model in the spec)")
     parser.add_argument("--ops", nargs="+", metavar="FILE", help="ops_eval.py results to use instead of the newest")
     parser.add_argument("--quality", metavar="FILE")
@@ -428,23 +475,24 @@ def main() -> int:
     parser.add_argument("--out-dir", default=str(HERE), help="where latest.json, latest.md and history/ go")
     args = parser.parse_args()
 
-    spec = yaml.safe_load(SPEC.read_text(encoding="utf-8"))
+    spec = yaml.safe_load(SPECS[args.engine].read_text(encoding="utf-8"))
     ev = gather(spec, args)
     card = build(spec, ev)
     out = Path(args.out_dir)
     (out / "history").mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    sfx = "-rag" if args.engine == "rag" else ""
     text = json.dumps(card, indent=2, ensure_ascii=False)
-    (out / "latest.json").write_text(text, encoding="utf-8")
-    (out / f"history/scorecard-{__version__}-{stamp}.json").write_text(text, encoding="utf-8")
-    (out / "latest.md").write_text(markdown(card), encoding="utf-8")
-    print(f"\n{card['app']} {card['version']}: {card['decision']}  score {card['total']:.0f}/100")
+    (out / f"latest{sfx}.json").write_text(text, encoding="utf-8")
+    (out / f"history/scorecard{sfx}-{__version__}-{stamp}.json").write_text(text, encoding="utf-8")
+    (out / f"latest{sfx}.md").write_text(markdown(card), encoding="utf-8")
+    print(f"\n{card['app']} {card['version']} ({ENGINE_NAMES[args.engine]}): {card['decision']}  score {card['total']:.0f}/100")
     for d in card["dimensions"]:
         print(f"  {d['name']:<26}{'n/a' if d['score'] is None else format(d['score'], '.0f'):>5}  (weight {d['weight']}%)")
     for label, key in (("blocked by", "gates_failed"), ("gate not measured", "gates_unmeasured")):
         for name in card[key]:
             print(f"  {label}: {name}")
-    print(f"Wrote {out / 'latest.json'} and latest.md")
+    print(f"Wrote {out / f'latest{sfx}.json'} and latest{sfx}.md")
     return 0 if card["decision"] != "HOLD" else 1
 
 

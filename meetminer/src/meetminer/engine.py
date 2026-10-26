@@ -1,8 +1,9 @@
-﻿"""The engine: settings, the answer prompt, the Claude API call, cost tracking, and a small command line.
+"""The engine: settings, the answer prompt, the Claude API call, cost tracking, and a small command line.
 
     python -m meetminer.engine inspect            parse report + measured token count of the whole corpus
     python -m meetminer.engine ask "question"     one question, with citation check and cost
     python -m meetminer.engine chat               interactive, keeps follow-up history
+    python -m meetminer.engine --engine rag ask "question"     the same with the RAG engine
 """
 from __future__ import annotations
 
@@ -18,14 +19,21 @@ import anthropic
 import yaml
 
 from . import guardrails, storage, usagelog
+from .retrieval import Retrieved, Retriever
 from .transcripts import (CheckReport, LoadResult, Meeting, check_citations, load_meetings, render_corpus,
                          split_multi_citations)
+
+ENGINES = {"full": "Full context", "rag": "RAG"}  # the two ways of giving Claude the transcripts
 
 DEFAULTS = {
     "transcripts_dir": "",  # empty: Documents\MeetMiner\Transcripts
     "meetings_meta": "meetings.yaml",
     "usage_log": "usage.csv",
     "model": "claude-haiku-5-5",
+    "engine": "full",  # "full": every question sends all transcripts; "rag": only the passages retrieval picks
+    "rag_top_k": 12,  # RAG: best-matching passages to start from
+    "rag_neighbors": 1,  # RAG: turns kept either side of each passage
+    "rag_max_tokens": 6000,  # RAG: most transcript text sent with one question (estimated tokens)
     "effort": "low",
     "max_tokens": 2000,
     "cache_ttl": "5m",
@@ -102,6 +110,10 @@ class Settings:
     confirm_model_switch: bool = True
     request_timeout_seconds: float = 60.0
     max_retries: int = 2
+    engine: str = "full"
+    rag_top_k: int = 12
+    rag_neighbors: int = 1
+    rag_max_tokens: int = 6000
 
 
 class ConfigError(Exception):
@@ -149,10 +161,13 @@ def resolve_prices(table: dict, model: str, cache_ttl: str) -> dict:
     }
 
 
-def with_overrides(settings: Settings, model: str | None = None, effort: str | None = None) -> Settings:
-    """A copy of the settings using another model (and its prices) and/or effort."""
+def with_overrides(settings: Settings, model: str | None = None, effort: str | None = None,
+                   engine: str | None = None) -> Settings:
+    """A copy of the settings using another model (and its prices), effort and/or engine."""
     model = model or settings.model
-    return replace(settings, model=model, effort=effort or settings.effort,
+    if engine is not None and engine not in ENGINES:
+        raise ConfigError(f"Unknown engine '{engine}': use one of {', '.join(ENGINES)}.")
+    return replace(settings, model=model, effort=effort or settings.effort, engine=engine or settings.engine,
                    prices=resolve_prices(settings.price_table, model, settings.cache_ttl))
 
 
@@ -201,6 +216,10 @@ def load_settings(path: Path | None = None) -> Settings:
         confirm_model_switch=confirm if isinstance(confirm, bool) else bool(cfg["confirm_model_switch"]),
         request_timeout_seconds=max(float(cfg["request_timeout_seconds"]), 1.0),
         max_retries=max(int(cfg["max_retries"]), 0),
+        engine=next(e for e in (user.get("engine"), cfg["engine"], "full") if e in ENGINES),
+        rag_top_k=max(int(cfg["rag_top_k"]), 1),
+        rag_neighbors=max(int(cfg["rag_neighbors"]), 0),
+        rag_max_tokens=max(int(cfg["rag_max_tokens"]), 500),
     )
 
 
@@ -226,6 +245,28 @@ def build_system(corpus: str, cache_ttl: str) -> list[dict]:
         breakpoint_["ttl"] = "1h"
     return [{"type": "text", "text": f"{SYSTEM_RULES}\n<transcripts>\n{corpus}\n</transcripts>",
              "cache_control": breakpoint_}]
+
+
+RAG_INTRO = ("Below are excerpts from the transcripts: the passages that matched the question, with the turns around "
+             "them. The rest of each meeting is not shown, and a line \"[... turns not shown ...]\" marks a gap.")
+
+
+def rules_for(engine: str) -> str:
+    """The same rules for both engines, except that RAG says it shows excerpts and that "not found" means not in them."""
+    if engine != "rag":
+        return SYSTEM_RULES
+    return (SYSTEM_RULES.replace("The full transcripts are below.", RAG_INTRO)
+            .replace("If the answer is not in the transcripts, begin", "If the answer is not in these excerpts, begin"))
+
+
+def build_system_rag(excerpts: str) -> list[dict]:
+    """No cache breakpoint: the excerpts change with every question, so writing them to the cache would only cost more
+    (a cache write is billed at 1.25 times the normal input price)."""
+    return [{"type": "text", "text": f"{rules_for('rag')}\n<transcripts>\n{excerpts}\n</transcripts>"}]
+
+
+NO_MATCH = ("Not found in the transcripts. No passage matched the words in your question, so nothing was sent to "
+            "Claude. Try other words, or switch to Full context.")
 
 
 # --------------------------------------------------------------------------- cost
@@ -265,7 +306,7 @@ class CostTracker:
         return self.total >= self.settings.max_session_cost_usd
 
     def record(self, question: str, tokens: dict[str, int], cost: float, seconds: float,
-               status: str = "ok", error_kind: str = "") -> None:
+               status: str = "ok", error_kind: str = "", engine: str | None = None) -> None:
         """One answered question (status "ok"), or an answer that came back unusable (status "failed")."""
         self.total += cost
         self.calls += 1
@@ -273,16 +314,17 @@ class CostTracker:
             "time": datetime.now().isoformat(timespec="seconds"), "model": self.settings.model,
             "effort": self.settings.effort, **tokens, "cost_usd": f"{cost:.6f}", "seconds": f"{seconds:.1f}",
             "question": question[:80].replace("\n", " "), "status": status, "error_kind": error_kind,
+            "engine": engine or self.settings.engine,
         })
 
-    def record_failure(self, question: str, error_kind: str, seconds: float) -> None:
+    def record_failure(self, question: str, error_kind: str, seconds: float, engine: str | None = None) -> None:
         """An attempt that never produced an answer (timeout, no connection, rejected key...): no cost, but it is
         logged so the failure rate can be measured. It does not count as a question in the session total."""
         usagelog.append(self.settings.usage_log, {
             "time": datetime.now().isoformat(timespec="seconds"), "model": self.settings.model,
             "effort": self.settings.effort, "input": 0, "cache_write": 0, "cache_read": 0, "output": 0,
             "cost_usd": "0.000000", "seconds": f"{seconds:.1f}", "question": question[:80].replace("\n", " "),
-            "status": "failed", "error_kind": error_kind,
+            "status": "failed", "error_kind": error_kind, "engine": engine or self.settings.engine,
         })
 
 
@@ -304,6 +346,8 @@ class Answer:
     # Why it failed: "session_cap" | "daily_cap" | "monthly_cap" | "no_transcripts" | "no_key" | "auth" | "credit" |
     # "bad_request" | "rate_limit" | "timeout" | "network" | "api" | "refusal" | "truncation". Empty when it worked.
     error_kind: str = ""
+    engine: str = "full"
+    retrieved: Retrieved | None = None  # RAG only: what was retrieved and sent
 
 
 # Failures a person fixes themselves (a key, credit, a limit they set); the others count against reliability.
@@ -316,6 +360,24 @@ class MeetingQA:
         self.meetings = meetings
         self.tracker = tracker or CostTracker(settings)
         self._client = client
+
+    @property
+    def meetings(self) -> list[Meeting]:
+        return self._meetings
+
+    @meetings.setter
+    def meetings(self, value: list[Meeting]) -> None:
+        """New transcripts: the RAG index is rebuilt from them on the next RAG question (it is never kept on disk)."""
+        self._meetings = value
+        self._retriever: Retriever | None = None
+
+    @property
+    def retriever(self) -> Retriever:
+        s = self.settings
+        if self._retriever is None or (self._retriever.top_k, self._retriever.neighbors, self._retriever.max_tokens) \
+                != (s.rag_top_k, s.rag_neighbors, s.rag_max_tokens):
+            self._retriever = Retriever(self._meetings, s.rag_top_k, s.rag_neighbors, s.rag_max_tokens)
+        return self._retriever
 
     @property
     def client(self) -> anthropic.Anthropic:
@@ -344,7 +406,7 @@ class MeetingQA:
     def ask(self, question: str, history: list[tuple[str, str]] | None = None) -> Answer:
         s = self.settings
         history = history or []
-        ans = Answer(question=question, model=s.model)
+        ans = Answer(question=question, model=s.model, engine=s.engine)
         if self.tracker.capped:
             ans.error_kind = "session_cap"
             ans.error = (f"Session cost cap reached (${self.tracker.total:.2f} of ${s.max_session_cost_usd:.2f}). "
@@ -359,7 +421,17 @@ class MeetingQA:
             ans.error = "No transcripts are loaded."
             return ans
 
-        system = build_system(get_context(self.meetings, question, history), s.cache_ttl)
+        if s.engine == "rag":
+            found = self.retriever.retrieve(question, history)
+            ans.retrieved = found
+            if not found.turns:  # GR-RAG-01: nothing matched, so nothing is sent and nothing is spent
+                ans.text = NO_MATCH
+                ans.check = check_citations(ans.text, self.meetings)
+                self.tracker.record(question, ans.tokens, 0.0, 0.0, error_kind="no_match", engine="rag")
+                return ans
+            system = build_system_rag(found.text)
+        else:
+            system = build_system(get_context(self.meetings, question, history), s.cache_ttl)
         messages: list[dict] = []
         for q, a in history[-s.history_turns:]:
             messages += [{"role": "user", "content": q}, {"role": "assistant", "content": a}]
@@ -401,7 +473,7 @@ class MeetingQA:
             ans.error = "No API key found. Open Settings and add your Anthropic API key."
         if ans.error:
             ans.seconds = time.perf_counter() - start
-            self.tracker.record_failure(question, ans.error_kind, ans.seconds)
+            self.tracker.record_failure(question, ans.error_kind, ans.seconds, engine=s.engine)
             return ans
 
         ans.seconds = time.perf_counter() - start
@@ -422,7 +494,8 @@ class MeetingQA:
                 logged_kind = "truncated"  # an answer, but cut short
                 ans.text += "\n\n*(Cut off at the max_tokens cap. Ask a narrower question or raise the cap.)*"
         self.tracker.record(question, ans.tokens, ans.cost, ans.seconds,
-                            status="failed" if ans.error else "ok", error_kind=ans.error_kind or logged_kind)
+                            status="failed" if ans.error else "ok", error_kind=ans.error_kind or logged_kind,
+                            engine=s.engine)
         if ans.text:
             ans.check = check_citations(ans.text, self.meetings)
             try:  # GR-INT-04. A bug in this check must not cost the user their answer, so it fails open.
@@ -489,6 +562,7 @@ def main() -> None:
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     env_note = load_env()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("--engine", choices=list(ENGINES), help="full context or RAG (default: the one chosen in the app)")
     sub = parser.add_subparsers(dest="cmd", required=True)
     sub.add_parser("inspect")
     ask_p = sub.add_parser("ask")
@@ -499,7 +573,7 @@ def main() -> None:
     if env_note:
         print(f"NOTE: {env_note}")
     try:
-        settings = load_settings()
+        settings = with_overrides(load_settings(), engine=args.engine)
     except ConfigError as exc:
         sys.exit(f"Config problem: {exc}")
     loaded = load_meetings(settings.transcripts_dir, settings.meetings_meta)

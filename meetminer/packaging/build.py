@@ -107,12 +107,15 @@ def main() -> int:
     icon = STAGE / "meetminer" / "assets" / "icon.ico"
     data = ["--add-data", f"{STAGE / 'meetminer' / 'config'};meetminer/config",
             "--add-data", f"{STAGE / 'meetminer' / 'assets'};meetminer/assets"]
-    scorecard = ROOT / "scorecards" / "latest.json"  # the Reports page shows this release's own scorecard
-    if scorecard.is_file():
+    # The two Reports pages show this release's own scorecards, one per engine.
+    cards = [(ROOT / "scorecards" / f"latest{sfx}.json", f"release-scorecard{sfx}.json") for sfx in ("", "-rag")]
+    cards = [(src, name) for src, name in cards if src.is_file()]
+    if cards:
         (STAGE / "meetminer" / "reports").mkdir()
-        shutil.copy2(scorecard, STAGE / "meetminer" / "reports" / "release-scorecard.json")
+        for src, name in cards:
+            shutil.copy2(src, STAGE / "meetminer" / "reports" / name)
+            print(f"   including scorecards/{src.name} as {name}")
         data += ["--add-data", f"{STAGE / 'meetminer' / 'reports'};meetminer/reports"]
-        print("   including scorecards/latest.json as the release scorecard")
 
     common = ["--noconfirm", "--clean", "--windowed", "--distpath", BUILT, "--workpath", WORK / "work",
               "--specpath", WORK / "spec", "--icon", icon, "--paths", STAGE,

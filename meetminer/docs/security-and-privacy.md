@@ -5,8 +5,13 @@
 Each question sends this to Anthropic's API (`api.anthropic.com`, over HTTPS):
 
 - your question and up to six earlier questions and answers from the current chat;
-- the text of **all** your transcripts (that is how the model can answer from them);
+- with the **Full context** engine, the text of **all** your transcripts; with the **RAG** engine, only the passages
+  that match the question (typically a few thousand tokens), and nothing at all when no passage matches;
 - the instructions that tell the model how to answer and cite.
+
+The RAG engine's index is built on this PC, in memory, from the transcripts already loaded. It is never written to disk
+and no other service (such as an embedding API) sees your transcripts. Of the two engines, RAG sends the least: a leaked
+request would expose one answer's excerpts, not the whole archive.
 
 Nothing else is sent: no files from outside the transcripts folder, no analytics, no telemetry, no crash reports. The
 free *Test key* button and the token count call Anthropic's token-counting endpoint, which receives the same text.

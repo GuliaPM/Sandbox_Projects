@@ -46,7 +46,7 @@ def wilson_upper(failures: int, n: int, z: float = 1.96) -> float | None:
 class GroupStats:
     model: str
     cell: str
-    cache_state: str  # "cold" | "warm" | "all"
+    cache_state: str  # "cold" | "warm" | "uncached" (RAG) | "all"
     attempts: int
     user_fixable: int
     counted: int  # attempts that count toward the failure rate
@@ -69,9 +69,14 @@ class GroupStats:
     answered: int
     truncated: int
     failure_kinds: dict
+    engine: str = "full"
+    no_match: int = 0  # RAG: answered "not found" without calling the API
+    answer_turns_found: int = 0  # RAG: questions whose answer turns were all retrieved...
+    answer_turns_asked: int = 0  # ...out of the questions that have answer turns
+    context_tokens: float | None = None  # RAG: average estimated tokens of excerpts sent
 
 
-def _stats(model: str, cell: str, state: str, rows: list[dict]) -> GroupStats:
+def _stats(model: str, cell: str, state: str, rows: list[dict], engine: str = "full") -> GroupStats:
     fixable = [r for r in rows if not r["ok"] and r.get("failure_kind") in USER_FIXABLE]
     counted = [r for r in rows if r not in fixable]
     failures = [r for r in counted if not r["ok"]]
@@ -83,7 +88,13 @@ def _stats(model: str, cell: str, state: str, rows: list[dict]) -> GroupStats:
     for r in failures:
         kinds[r.get("failure_kind") or "unknown"] = kinds.get(r.get("failure_kind") or "unknown", 0) + 1
     cites = {k: sum(r.get("citations", {}).get(k, 0) for r in answered) for k in ("ok", "weak", "bad")}
+    retrieved = [r["retrieval"] for r in rows if r.get("retrieval")]
+    with_gold = [x for x in retrieved if x.get("answer_turns_found")]
+    sent = [x["tokens_estimate"] for x in retrieved if x.get("turns")]
     return GroupStats(
+        engine=engine, no_match=sum(1 for x in retrieved if not x.get("turns")),
+        answer_turns_found=sum(1 for x in with_gold if all(x["answer_turns_found"])), answer_turns_asked=len(with_gold),
+        context_tokens=sum(sent) / len(sent) if sent else None,
         model=model, cell=cell, cache_state=state, attempts=len(rows), user_fixable=len(fixable), counted=len(counted),
         failures=len(failures), failure_rate=len(failures) / len(counted) if counted else None,
         failure_upper95=wilson_upper(len(failures), len(counted)),
@@ -100,19 +111,21 @@ def _stats(model: str, cell: str, state: str, rows: list[dict]) -> GroupStats:
 
 
 def summarize(rows: list[dict]) -> list[GroupStats]:
-    """One GroupStats per (model, cell) for cold attempts, warm attempts, and all of them together."""
+    """One GroupStats per (engine, model, cell) for each cache state present (cold, warm; RAG has only "uncached"),
+    and for all of them together. Rows written before RAG existed have no engine: they are full context."""
     out: list[GroupStats] = []
-    for model, cell in sorted({(r["model"], r["cell"]) for r in rows}):
-        group = [r for r in rows if r["model"] == model and r["cell"] == cell]
-        for state in ("cold", "warm", "all"):
+    keyed = [(r.get("engine", "full"), r["model"], r["cell"]) for r in rows]
+    for engine, model, cell in sorted(set(keyed)):
+        group = [r for r, k in zip(rows, keyed) if k == (engine, model, cell)]
+        states = [s for s in ("cold", "warm", "uncached") if any(r["cache_state"] == s for r in group)]
+        for state in states + ["all"]:
             part = group if state == "all" else [r for r in group if r["cache_state"] == state]
-            if part:
-                out.append(_stats(model, cell, state, part))
+            out.append(_stats(model, cell, state, part, engine))
     return out
 
 
-def find(stats: list[GroupStats], model: str, cell: str, state: str) -> GroupStats | None:
-    return next((s for s in stats if (s.model, s.cell, s.cache_state) == (model, cell, state)), None)
+def find(stats: list[GroupStats], model: str, cell: str, state: str, engine: str = "full") -> GroupStats | None:
+    return next((s for s in stats if (s.engine, s.model, s.cell, s.cache_state) == (engine, model, cell, state)), None)
 
 
 def fmt_pct(value: float | None, digits: int = 1) -> str:
@@ -129,10 +142,10 @@ def fmt_usd(value: float | None) -> str:
 
 def report(stats: list[GroupStats]) -> str:
     """A plain-text table of every group."""
-    lines = [f"{'model':<20}{'cell':<5}{'cache':<6}{'n':>5}{'p50':>9}{'p95':>9}{'p99':>9}{'fail':>8}{'upper95':>9}"
+    lines = [f"{'engine':<7}{'model':<20}{'cell':<5}{'cache':<9}{'n':>5}{'p50':>9}{'p95':>9}{'p99':>9}{'fail':>8}{'upper95':>9}"
              f"{'tasks ok':>10}{'cost/success':>14}"]
     for s in stats:
-        lines.append(f"{s.model:<20}{s.cell:<5}{s.cache_state:<6}{s.attempts:>5}{fmt_s(s.p50):>9}{fmt_s(s.p95):>9}"
+        lines.append(f"{s.engine:<7}{s.model:<20}{s.cell:<5}{s.cache_state:<9}{s.attempts:>5}{fmt_s(s.p50):>9}{fmt_s(s.p95):>9}"
                      f"{fmt_s(s.p99):>9}{fmt_pct(s.failure_rate):>8}{fmt_pct(s.failure_upper95):>9}"
                      f"{fmt_pct(s.task_success_rate, 0):>10}{fmt_usd(s.cost_per_success):>14}")
     return "\n".join(lines)

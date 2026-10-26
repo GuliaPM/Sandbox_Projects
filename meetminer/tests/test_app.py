@@ -491,13 +491,101 @@ class WindowTests(unittest.TestCase):
 
     # ------------------------------------------------------------------ the Guardrails and Reports pages
 
-    def test_settings_has_three_pages_and_opens_on_the_one_asked_for(self):
+    def test_settings_has_four_pages_and_opens_on_the_one_asked_for(self):
         app = self.fresh_app(with_key=True, with_transcripts=True)
-        dialog = ui.SettingsDialog(app, "reports")
+        for focus, index in (("reports", 2), ("rag-reports", 3), ("guardrails", 1), (None, 0)):
+            dialog = ui.SettingsDialog(app, focus)
+            try:
+                self.assertEqual([dialog.tabs.tab(t, "text").strip() for t in dialog.tabs.tabs()],
+                                 ["General", "Guardrails", "Full-context reports", "RAG reports"])
+                self.assertEqual(dialog.tabs.index(dialog.tabs.select()), index, focus)
+            finally:
+                dialog.destroy()
+
+    # ------------------------------------------------------------------ the engine switch and the RAG reports page
+
+    def test_the_engine_switch_changes_the_engine_everywhere_and_is_remembered(self):
+        self.assertEqual(self.app.settings.engine, "full")
+        self.assertEqual(self.app.engine_buttons["full"].cget("bg"), ui.C["accent"])
+        self.app.set_engine("rag")
+        for s in (self.app.settings, self.app.base_settings, self.app.qa.settings, self.app.tracker.settings):
+            self.assertEqual(s.engine, "rag")
+        self.assertEqual(storage.load_user_settings()["engine"], "rag")
+        self.assertEqual(self.app.engine_buttons["rag"].cget("bg"), ui.C["accent"])
+        self.assertIn("only the passages", self.app.engine_note.cget("text"))
+        with mock.patch("meetminer.app.messagebox.askyesno", return_value=True):  # a model switch keeps the engine
+            self.switch_to("claude-sonnet-5-5")
+        self.assertEqual(self.app.settings.engine, "rag")
+        self.assertEqual(load_settings().engine, "rag")  # a new start uses it too
+
+    def test_the_engine_cannot_change_while_an_answer_is_on_its_way(self):
+        self.app.busy = True
+        self.app.set_engine("rag")
+        self.assertEqual(self.app.settings.engine, "full")
+        self.app.busy = False
+
+    def test_a_rag_answer_is_asked_with_rag_and_says_so_under_the_answer(self):
+        self.app.set_engine("rag")
+        client = mock.Mock()
+        client.messages.create.return_value = mock.Mock(
+            content=[mock.Mock(type="text", text="The budget is approved [Test call, Speaker 1, 00:56].")],
+            stop_reason="end_turn", usage=mock.Mock(input_tokens=900, cache_creation_input_tokens=0,
+                                                    cache_read_input_tokens=0, output_tokens=40))
+        self.app.qa._client = client
+        self.assertTrue(self.app.ask("Was the budget approved?"))
+        self.pump(lambda: not self.app.busy)
+        system = client.messages.create.call_args.kwargs["system"][0]
+        self.assertNotIn("cache_control", system)
+        self.assertIn("excerpts", system["text"])
+        chat = self.app.chat.get("1.0", "end")
+        self.assertIn("RAG:", chat)
+        self.assertIn("passages from 1 meeting", chat)
+
+    def test_a_rag_question_that_matches_nothing_costs_nothing(self):
+        self.app.set_engine("rag")
+        client = mock.Mock()
+        self.app.qa._client = client
+        self.assertTrue(self.app.ask("Was Kubernetes discussed?"))
+        self.pump(lambda: not self.app.busy)
+        client.messages.create.assert_not_called()
+        chat = self.app.chat.get("1.0", "end")
+        self.assertIn("nothing was sent to Claude", chat)
+        self.assertIn("no passage matched, nothing was sent", chat)
+
+    def test_the_large_transcripts_notice_offers_rag_and_disappears_with_it(self):
+        self.app.prompt_tokens = (70_000, "measured")
+        self.app.refresh_notices()
+        buttons = [w for row in self.app.notices.winfo_children() for w in row.winfo_children()
+                   if isinstance(w, tk.Button)]
+        self.assertIn("Switch to RAG", [b.cget("text") for b in buttons])
+        next(b for b in buttons if b.cget("text") == "Switch to RAG").invoke()
+        self.assertEqual(self.app.settings.engine, "rag")
+        self.assertFalse(any("above the" in t for t in self.notice_texts()))
+
+    def test_each_reports_page_shows_only_its_own_engine(self):
+        app = self.fresh_app(with_key=True, with_transcripts=True)
+        for engine, n, seconds in (("full", 2, 2.0), ("rag", 3, 1.0)):
+            for _ in range(n):
+                usagelog.append(app.settings.usage_log, {
+                    "time": datetime.now().isoformat(timespec="seconds"), "model": "claude-haiku-5-5", "effort": "low",
+                    "input": 10, "cache_write": 0, "cache_read": 0, "output": 100, "cost_usd": "0.000500",
+                    "seconds": str(seconds), "question": "q", "status": "ok", "error_kind": "", "engine": engine})
+        usagelog.append(app.settings.usage_log, {
+            "time": datetime.now().isoformat(timespec="seconds"), "model": "claude-haiku-5-5", "effort": "low",
+            "input": 0, "cache_write": 0, "cache_read": 0, "output": 0, "cost_usd": "0", "seconds": "0", "question": "q",
+            "status": "ok", "error_kind": "no_match", "engine": "rag"})
+        self.write_scorecard(storage.data_dir() / "reports" / "scorecard-rag.json")
+        dialog = ui.SettingsDialog(app, "rag-reports")
         try:
-            self.assertEqual([dialog.tabs.tab(t, "text").strip() for t in dialog.tabs.tabs()],
-                             ["General", "Guardrails", "Reports"])
-            self.assertEqual(dialog.tabs.index(dialog.tabs.select()), 2)
+            full, rag = self.panel_text(dialog.reports_panel), self.panel_text(dialog.rag_reports_panel)
+            self.assertIn("2 answers", full)
+            self.assertIn("answered with Full context", full)
+            self.assertIn("3 answers", rag)
+            self.assertIn("answered with RAG", rag)
+            self.assertIn("1 question matched no passage", rag)
+            self.assertIn("Release scorecard: RAG", rag)
+            self.assertIn("MeetMiner 9.9.9", rag)
+            self.assertNotIn("matched no passage", full)
         finally:
             dialog.destroy()
 

@@ -1,6 +1,6 @@
-# MeetMiner 1.1.0 release scorecard
+# MeetMiner 1.2.0 release scorecard: full context engine
 
-**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-25  ·  configuration: claude-haiku-5-5, cell S (fictional samples (samples/transcripts))
+**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-25  ·  configuration: claude-haiku-5-5, full context, cell S (fictional samples (samples/transcripts))
 
 ## Answer quality  (100/100, weight 35%)
 
@@ -34,6 +34,9 @@
 | Cost per successful task, 60k-token transcripts | for information | $0.00158 | info |
 | Tasks done right, 15k-token transcripts | for information | 94/100 (94.0%) | info |
 | Tasks done right, 60k-token transcripts | for information | 49/50 (98.0%) | info |
+| p95 latency, cache warm, 160k-token transcripts | for information | 6.83 s | info |
+| Cost per successful task, 160k-token transcripts | for information | $0.00405 | info |
+| Tasks done right, 160k-token transcripts | for information | 27/30 (90.0%) | info |
 
 ## Safety and privacy  (100/100, weight 15%)
 
@@ -48,17 +51,17 @@
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Unit tests passing **[gate]** | ≥ 100% | 208/208 (100.0%) | good |
+| Unit tests passing **[gate]** | ≥ 100% | 242/242 (100.0%) | good |
 | Guardrail tests passing | ≥ 100% | 50/50 (100.0%) | good |
 | Install, upgrade and uninstall pass in a sandbox | yes | pass | good |
 | Dependency range bounded and changelog updated | yes | yes | good |
 
 ## Evidence
 
-- Operational runs: evals/results/ops-claude-haiku-5-5-S-20261025-005242.jsonl, evals/results/ops-claude-haiku-5-5-M-20261025-004244.jsonl, evals/results/ops-claude-haiku-5-5-L-20261025-004614.jsonl, evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl
+- Operational runs: evals/results/ops-claude-haiku-5-5-S-20261025-005242.jsonl, evals/results/ops-claude-haiku-5-5-M-20261025-004244.jsonl, evals/results/ops-claude-haiku-5-5-L-20261025-004614.jsonl, evals/results/ops-claude-haiku-5-5-XL-20261025-222558.jsonl, evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl
 - Quality eval: evals/results/quality-claude-haiku-5-5-20261025-003438.json
 - Injection probes: evals/results/probes-claude-haiku-5-5-20261025-003607.json
-- Unit tests: 208/208 ok
+- Unit tests: 242/242 ok
 - Release scan: CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.
 - Install test: SANDBOX RESULT: PASS (14/14 checks)
 

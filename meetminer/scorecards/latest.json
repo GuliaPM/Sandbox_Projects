@@ -1,8 +1,9 @@
 {
   "schema": 1,
   "app": "MeetMiner",
-  "version": "1.1.0",
-  "generated": "2026-10-25T01:15:57",
+  "version": "1.2.0",
+  "engine": "full",
+  "generated": "2026-10-25T22:35:52",
   "decision": "SHIP",
   "total": 100.0,
   "gates_failed": [],
@@ -10,6 +11,7 @@
   "unmeasured": [],
   "config": {
     "model": "claude-haiku-5-5",
+    "engine": "full",
     "cell": "S",
     "transcripts": "fictional samples (samples/transcripts)"
   },
@@ -197,6 +199,33 @@
           "rating": "info",
           "gate": false,
           "note": ""
+        },
+        {
+          "id": "p95_warm_xl",
+          "name": "p95 latency, cache warm, 160k-token transcripts",
+          "target": "for information",
+          "measured": "6.83 s",
+          "rating": "info",
+          "gate": false,
+          "note": "n=27"
+        },
+        {
+          "id": "cost_xl",
+          "name": "Cost per successful task, 160k-token transcripts",
+          "target": "for information",
+          "measured": "$0.00405",
+          "rating": "info",
+          "gate": false,
+          "note": "$0.1093 over 30 attempts"
+        },
+        {
+          "id": "success_xl",
+          "name": "Tasks done right, 160k-token transcripts",
+          "target": "for information",
+          "measured": "27/30 (90.0%)",
+          "rating": "info",
+          "gate": false,
+          "note": ""
         }
       ]
     },
@@ -254,7 +283,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "208/208 (100.0%)",
+          "measured": "242/242 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -307,11 +336,13 @@
       "evals/results/ops-claude-haiku-5-5-S-20261025-005242.jsonl",
       "evals/results/ops-claude-haiku-5-5-M-20261025-004244.jsonl",
       "evals/results/ops-claude-haiku-5-5-L-20261025-004614.jsonl",
+      "evals/results/ops-claude-haiku-5-5-XL-20261025-222558.jsonl",
       "evals/results/ops-claude-sonnet-5-5-S-20261025-004038.jsonl"
     ],
     "quality": "evals/results/quality-claude-haiku-5-5-20261025-003438.json",
     "probes": "evals/results/probes-claude-haiku-5-5-20261025-003607.json",
-    "unit_tests": "208/208 ok",
+    "retrieval": null,
+    "unit_tests": "242/242 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

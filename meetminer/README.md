@@ -23,8 +23,11 @@ that check:
 - **Citations are verified by code, not trusted.** After the model answers, the app looks up every quoted phrase in the
   cited speaker turn. A quote that is not there is flagged orange or red, and clicking it shows where the words really
   are (or that they are not in your transcripts at all).
-- **Nothing to set up on your side except a key.** No server, no database, no index. The transcripts are small enough
-  to send whole with every question, so nothing can be missed by a search step.
+- **Two engines, one switch.** *Full context* sends every transcript with each question, so nothing can be missed.
+  *RAG* (retrieval-augmented generation) uses a local keyword index to send only the passages that match, which keeps
+  each question small and cheap however many meetings you have. Switch in the sidebar; both are measured side by side.
+- **Nothing to set up on your side except a key.** No server, no database, no embedding service. The RAG index is built
+  on your PC, in memory.
 - **Cheap.** Answers cost a fraction of a cent (see [Accuracy and cost](#accuracy-and-cost)); the app shows what each
   question cost and can stop at a spending limit you set.
 
@@ -35,10 +38,14 @@ that check:
   was not found. Click one and the transcript opens with the turn and the quoted words highlighted.
 - **Numbers are checked too.** A figure or date in an answer that is not in the turn it cites is listed under the answer,
   so a wrong "$19,500" cannot hide behind a perfect quote.
+- **An engine switch** in the sidebar: *Full context* or *RAG*. Under each answer, the line says which engine answered
+  and, for RAG, how many passages from how many meetings were sent. A RAG question that matches nothing is answered
+  "not found" without a call, at no cost.
 - A first-run checklist that asks for the two things the app needs: your Anthropic API key and your transcripts.
-- **Settings in three pages.** *General*: API key (saved encrypted for your Windows account, with a free *Test key* button)
+- **Settings in four pages.** *General*: API key (saved encrypted for your Windows account, with a free *Test key* button)
   and transcripts folder. *Guardrails*: spending limits per session, day and month, and the confirmation before a pricier
-  model. *Reports*: your spending, your own speed and failure rate, and the release scorecard.
+  model. *Full-context reports* and *RAG reports*: your spending, your own speed and failure rate with that engine, and
+  that engine's release scorecard.
 - Choice of answer model: Claude Haiku (cheapest) or Sonnet (most reliable citations). Switching to a model that costs more
   asks first and says how many times more a question would cost.
 - A per-user installer with a safe upgrade path and an uninstaller that can also wipe your settings and saved key.
@@ -47,9 +54,13 @@ that check:
 |---|---|
 | ![First-run checklist](docs/images/first-run.png) | ![The Guardrails page of Settings](docs/images/guardrails.png) |
 
-| Settings, General | Settings, Reports |
+| An answer from the RAG engine | Settings, RAG reports |
 |---|---|
-| ![The General page of Settings](docs/images/settings.png) | ![The Reports page of Settings](docs/images/reports.png) |
+| ![An answer from the RAG engine, with the engine switch in the sidebar](docs/images/answer-rag.png) | ![The RAG reports page of Settings](docs/images/rag-reports.png) |
+
+| Settings, General | Settings, Full-context reports |
+|---|---|
+| ![The General page of Settings](docs/images/settings.png) | ![The Full-context reports page of Settings](docs/images/reports.png) |
 
 ## Quick start
 
@@ -82,25 +93,28 @@ From a checkout the app keeps its settings, usage log and (if you add one) a `.e
 ## How it works
 
 ```
- transcripts (.txt)      question
-        |                    |
-   [parser] -> turns         |
-        |                    v
-        +---------> [prompt: all turns, each line tagged  [Meeting, Speaker 2, 04:09] ]
-                              |   (cached, so follow-ups cost about a tenth)
-                              v
-                        Claude API  -->  answer with citations
-                              |
-                              v
-                 [citation checker]  every quote must be inside the cited turn
-                              |
-                              v
-        chat view (coloured citations)  +  reader (turn and quote highlighted)
+ transcripts (.txt)                         question
+        |                                       |
+   [parser] -> speaker turns, each line tagged [Meeting, Speaker 2, 04:09]
+        |                                       |
+        +--- Full context: all turns ---------->+   (prompt-cached, so follow-ups cost about a tenth)
+        |                                       |
+        +--- RAG: BM25 index (in memory) ------>+   only the matching turns, one either side, about 3k tokens
+                                                |   (no match at all: "not found", no call, $0)
+                                                v
+                                     Claude API  -->  answer with citations
+                                                |
+                       [citation checker + numbers check]  every quote and figure against the cited turn
+                                                |
+                     chat view (coloured citations)  +  reader (turn and quote highlighted)
 ```
 
-- **Full-context, not retrieval.** Every question sends all the transcripts. For a handful of meetings this is cheaper
-  and more accurate than searching for passages. The app warns when the total gets large (about 60,000 tokens) and
-  `get_context()` in `engine.py` is the one place to add retrieval.
+- **Two engines.** *Full context* sends every transcript with each question: nothing can be missed, and caching keeps
+  follow-ups cheap, but cost and time grow with the archive. *RAG* ranks speaker turns with BM25 (a keyword relevance
+  formula) and sends only the best ones, so a question costs about the same at 4 meetings or 100. Retrieval is local,
+  in memory and needs no embedding service. With large transcripts the app suggests switching to RAG.
+- **Same output format for both.** RAG sends the retrieved turns in exactly the tagged-line format of full context, so
+  the citation and numbers checks work unchanged.
 - **Tags that can be copied.** Each prompt line starts with the exact citation tag, and long speaker turns are split
   into lines that repeat it. Without that, models often cite the neighbouring turn.
 - **A strict checker.** It tolerates Otter's stutters, punctuation, quotes split across two speakers and either
@@ -150,13 +164,47 @@ plan to quote people. Prices are in `src/meetminer/config/default.yaml` (US doll
 cost from token counts, and the Anthropic Console shows the billed amount. Results vary from run to run, so treat these as
 measurements, not a guarantee.
 
+### Full context and RAG side by side
+
+The same evals run with `--engine rag`, Claude Haiku 5.5 on both engines. On the sample transcripts RAG answered 10/10
+quality questions and resisted 10/10 injection probes. The retrieval eval ([RET-01](evals/README.md), no API calls) found
+the passage holding each answer for 8 of 8 answerable questions at every size, up to 99 meetings.
+
+| Transcripts | Engine | p95 time to answer | Tasks done right | Cost per successful task |
+|---|---|---|---|---|
+| Samples, about 3,900 tokens (100 attempts) | Full context | 3.7 s | 99% | $0.00023 |
+| | RAG | 2.2 s | 99% | $0.00036 |
+| About 15,000 tokens (100 attempts) | Full context | 4.8 s | 94% | $0.00051 |
+| | RAG | 3.5 s | 97% | $0.00050 |
+| About 60,000 tokens (50 attempts) | Full context | 5.8 s | 98% | $0.00158 |
+| | RAG | 3.5 s | 100% | $0.00048 |
+| About 160,000 tokens, 99 meetings (30 attempts) | Full context | 6.8 s | 90% | $0.00405 |
+| | RAG | 1.9 s | 100% | $0.00047 |
+
+At 160,000 tokens RAG sent about 2,900 tokens per question, 2% of what full context sends, and was about nine times
+cheaper per successful task. On the two short sample calls full context is cheaper, because its prompt cache makes
+re-reading them nearly free and RAG uses no cache. One of the two questions whose answer is not in the transcripts
+matched no passage, so RAG answered "not found" without calling Claude at all. The 160,000-token runs are small
+(30 attempts each), so treat that row as a direction rather than a precise figure.
+
+### Which engine should I use?
+
+- **A few meetings (up to about 60,000 tokens, roughly ten one-hour calls):** *Full context*. It cannot miss a passage,
+  questions comparing many meetings see everything, and the prompt cache makes it the cheaper of the two.
+- **A larger archive:** *RAG*. Each question sends about the same few thousand tokens however many meetings there are,
+  so it stays fast and cheap, and less of your text leaves the PC per question.
+- **If RAG says "not found" for something you know is there:** the question's words probably don't appear in the
+  transcript (RAG matches words, not meaning). Rephrase with words the speakers used, or switch to *Full context*.
+
 ### Release scorecard
 
 Before a release the evals, the unit tests, the release scan and an install test are scored against targets in
-[`scorecards/scorecard.spec.yaml`](scorecards/scorecard.spec.yaml). Version 1.1.0 scored **SHIP, 100/100**
-([`scorecards/latest.md`](scorecards/latest.md)). Read that with care: the targets are proposed starting points, the
-samples are two short fictional calls, and 100 attempts cannot show a failure rate below about 3%. The same card is shown
-in the app, in Settings, Reports.
+[`scorecards/scorecard.spec.yaml`](scorecards/scorecard.spec.yaml) for full context and
+[`scorecards/scorecard-rag.spec.yaml`](scorecards/scorecard-rag.spec.yaml) for RAG (which adds a retrieval dimension).
+Version 1.2.0 scored **SHIP, 100/100** on both: [`scorecards/latest.md`](scorecards/latest.md) (full context) and
+[`scorecards/latest-rag.md`](scorecards/latest-rag.md) (RAG). Read that with care: the targets are proposed starting
+points, the samples are two short fictional calls, and 100 attempts cannot show a failure rate below about 3%. The same
+cards are shown in the app, in Settings, on the Full-context reports and RAG reports pages.
 
 ## Privacy and security
 
@@ -177,6 +225,7 @@ meetminer/
 │   ├── app.py                 the window: chat, reader, Settings (General, Guardrails, Reports), first-run checklist
 │   ├── engine.py              settings, the answer prompt, the Claude call (with a timeout), cost tracking
 │   ├── transcripts.py         Otter parser, prompt rendering, the citation checker
+│   ├── retrieval.py           the RAG engine's retrieval: BM25 over speaker turns, in memory
 │   ├── guardrails.py          spending limits per day and month, model-switch cost comparison, numbers and dates check
 │   ├── usagelog.py            the usage log, answered and failed attempts
 │   ├── reports.py             statistics over the log, and the scorecard file
@@ -202,8 +251,11 @@ meetminer/
 .\.venv\Scripts\python evals\run_eval.py --dry-run             cost estimate for the live quality eval (no key, no spend)
 .\.venv\Scripts\python evals\run_eval.py                       quality eval on the samples (needs a key; about $0.002)
 .\.venv\Scripts\python evals\run_probes.py                     prompt-injection probes (about $0.002)
+.\.venv\Scripts\python evals\retrieval_eval.py                 RAG retrieval recall at four transcript sizes (free)
+.\.venv\Scripts\python evals\run_eval.py --engine rag          any eval against the RAG engine (also run_probes, ops_eval)
 .\.venv\Scripts\python evals\ops_eval.py --cell S --reps 10    speed, failures and cost per successful task (about $0.02)
 .\.venv\Scripts\python scorecards\build_scorecard.py           score the newest results and decide SHIP, REVIEW or HOLD
+.\.venv\Scripts\python scorecards\build_scorecard.py --engine rag     the same for the RAG engine
 .\.venv\Scripts\python tools\fake_api.py                       a fake Claude API: point ANTHROPIC_BASE_URL at it to try the app free
 ```
 

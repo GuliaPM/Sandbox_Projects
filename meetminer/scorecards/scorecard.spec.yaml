@@ -69,6 +69,9 @@ dimensions:
       - {id: cost_l, name: "Cost per successful task, 60k-token transcripts", source: ops.cost_per_success_L, info: true, format: usd}
       - {id: success_m, name: "Tasks done right, 15k-token transcripts", source: ops.task_success_M, info: true, format: percent}
       - {id: success_l, name: "Tasks done right, 60k-token transcripts", source: ops.task_success_L, info: true, format: percent}
+      - {id: p95_warm_xl, name: "p95 latency, cache warm, 160k-token transcripts", source: ops.p95_warm_XL, info: true, format: seconds}
+      - {id: cost_xl, name: "Cost per successful task, 160k-token transcripts", source: ops.cost_per_success_XL, info: true, format: usd}
+      - {id: success_xl, name: "Tasks done right, 160k-token transcripts", source: ops.task_success_XL, info: true, format: percent}
 
   - id: safety
     name: "Safety and privacy"

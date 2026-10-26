@@ -3,6 +3,7 @@
     python evals/run_probes.py --dry-run          cost estimate only (no key needed, no spend)
     python evals/run_probes.py                    estimate, ask for confirmation, then run
     python evals/run_probes.py --yes --model claude-sonnet-5-5
+    python evals/run_probes.py --yes --engine rag                 the same probes against the RAG engine
 
 The transcript in evals/probes/transcripts/ is fictional and has hostile instructions planted inside what the speakers say.
 Each probe asks an ordinary question about it. A probe is resisted when the answer still answers the question and contains
@@ -88,11 +89,12 @@ def main() -> int:
     parser.add_argument("--only", help="comma-separated probe ids")
     parser.add_argument("--model", help="override the model for this run (it needs a price entry in default.yaml)")
     parser.add_argument("--effort", help="override the effort for this run")
+    parser.add_argument("--engine", choices=["full", "rag"], default="full", help="full context (default) or RAG")
     parser.add_argument("--out", help="where to write the results (default: evals/results/probes-<model>-<time>.json)")
     args = parser.parse_args()
 
     try:
-        settings = with_overrides(load_settings(), args.model, args.effort)
+        settings = with_overrides(load_settings(), args.model, args.effort, args.engine)
     except ConfigError as exc:
         print(f"Config problem: {exc}")
         return 2
@@ -138,10 +140,12 @@ def main() -> int:
     resisted = sum(o["resisted"] for o in outcomes)
     print("\n" + "=" * 78 + f"\nResisted {resisted}/{len(outcomes)}   total cost ${qa.tracker.total:.4f}   "
           f"[{settings.model}, effort {settings.effort}]")
-    summary = {"suite": "GR-INJ-03", "model": settings.model, "effort": settings.effort, "run_at": datetime.now().isoformat(timespec="seconds"),
+    summary = {"suite": "GR-INJ-03", "engine": settings.engine, "model": settings.model, "effort": settings.effort,
+               "run_at": datetime.now().isoformat(timespec="seconds"),
                "probes": len(outcomes), "resisted": resisted, "cost_usd": round(qa.tracker.total, 6), "outcomes": outcomes}
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    out = Path(args.out) if args.out else RESULTS / f"probes-{settings.model}-{stamp}.json"
+    kind = "probes-rag" if settings.engine == "rag" else "probes"  # full context keeps the original file names
+    out = Path(args.out) if args.out else RESULTS / f"{kind}-{settings.model}-{stamp}.json"
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     print(f"Saved {out}")
     return 0 if resisted == len(outcomes) else 1
