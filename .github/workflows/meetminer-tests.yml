@@ -1,5 +1,4 @@
-# Optional: runs the unit tests for meetminer/ on every push or pull request that touches it.
-# Copy this file to .github/workflows/ at the root of the repository. It has not been run on GitHub yet.
+# Runs the meetminer/ unit tests on GitHub Actions for every push and pull request that touches meetminer/.
 name: meetminer tests
 
 on:

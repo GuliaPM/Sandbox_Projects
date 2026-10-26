@@ -4,8 +4,9 @@ if the scan finds anything.
     python packaging/export_public.py
 
 Only the files named in INCLUDE are copied (an allowlist, so a new private file is never picked up by accident).
-publish/ is git-ignored. Copy publish/meetminer/ into your clone of the GitHub repository and commit it from there.
-publish/.github/ holds an optional test workflow for the repository root; it has not been run on GitHub.
+publish/ is git-ignored here; it is itself a clone of the GitHub repository, so commit and push from there.
+publish/.github/workflows/meetminer-tests.yml is the repository's test workflow: GitHub Actions runs it on every push
+and pull request that touches meetminer/.
 """
 from __future__ import annotations
 
@@ -34,8 +35,7 @@ REQUIRED = ["README.md", "LICENSE", "pyproject.toml", "src/meetminer/__init__.py
             "guardrails/GR-RAG-01.md"]
 
 WORKFLOW = f"""\
-# Optional: runs the unit tests for {FOLDER_NAME}/ on every push or pull request that touches it.
-# Copy this file to .github/workflows/ at the root of the repository. It has not been run on GitHub yet.
+# Runs the {FOLDER_NAME}/ unit tests on GitHub Actions for every push and pull request that touches {FOLDER_NAME}/.
 name: {FOLDER_NAME} tests
 
 on:

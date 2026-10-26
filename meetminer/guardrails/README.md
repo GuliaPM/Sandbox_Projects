@@ -43,7 +43,7 @@ Status: **in place** (built, tested, in the app or the process), **partial** (ex
 | GR-PRV-05 | A switch to turn off the usage log, and automatic trimming | preventive | proposed | |
 | GR-PRV-06 | Optional redaction of emails, phone and card numbers before sending | preventive | proposed | |
 | GR-REL-05 | Startup check that the configured model is still available | detective | proposed | |
-| GR-REL-09 | CI runs the tests on every push | detective | partial: workflow written, never run on GitHub | |
+| GR-REL-09 | CI runs the tests on every push | detective | in place: runs on every push and pull request that touches meetminer/ | `.github/workflows/meetminer-tests.yml` at the repository root |
 | GR-REL-10 | Code-sign the installer | preventive | proposed | |
 
 ## How a guardrail is proven
