@@ -2,6 +2,7 @@
 and check the model's citations against the source text."""
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -216,6 +217,18 @@ def load_meetings(folder: Path, meta_path: Path | None = None) -> LoadResult:
 
 SEGMENT_WORDS = 90  # a long turn is shown as several lines of about this many words, each with the turn's tag
 
+# Measured 2026-10-26 with the count_tokens endpoint (evals/token_count.py, evals/TOKENS.md): these transcripts run at
+# 2.81 to 2.92 characters per token as whole prompts and 2.74 to 2.95 as RAG excerpts, the same for Claude Haiku 5.5
+# and Sonnet 5.5. The old rule of 4 characters per token undercounted by about 1.4x. 2.7 is just below the lowest
+# measured value, so the estimate errs slightly high and a token budget is a ceiling, not a guess.
+CHARS_PER_TOKEN = 2.7
+
+
+def estimate_tokens(text: str) -> int:
+    """Tokens in `text` when no exact count is available (no key, or inside retrieval where counting would be slow).
+    The one place the app estimates tokens; see CHARS_PER_TOKEN for how it was calibrated."""
+    return math.ceil(len(text) / CHARS_PER_TOKEN)
+
 
 def _segments(text: str, target: int = SEGMENT_WORDS) -> list[str]:
     """Split a long turn at sentence ends. Otter turns can run 1,000 words; repeating the tag every
@@ -235,13 +248,18 @@ def _segments(text: str, target: int = SEGMENT_WORDS) -> list[str]:
     return out
 
 
+def turn_lines(meeting: Meeting, turn: Turn) -> list[str]:
+    """A turn as the model sees it: one line per ~90 words, each starting with the turn's citation tag. The prefix is
+    exactly the citation format, so the model can copy it instead of rebuilding it."""
+    return [f"[{meeting.title}, {turn.label}, {turn.start}] {seg}" for seg in _segments(turn.text)]
+
+
 def render_corpus(meetings: list[Meeting]) -> str:
     """One stable text block: one line per turn (long turns: one line per ~90 words, same tag).
     Must stay byte-identical between calls (it sits in front of the prompt-cache breakpoint)."""
     blocks = []
     for m in meetings:
-        # The prefix is exactly the citation format, so the model can copy it instead of rebuilding it.
-        lines = [f"[{m.title}, {t.label}, {t.start}] {seg}" for t in m.turns for seg in _segments(t.text)]
+        lines = [line for t in m.turns for line in turn_lines(m, t)]
         blocks.append(f"=== MEETING: {m.title} | date: {m.date or 'unknown'} ===\n" + "\n".join(lines))
     return "\n\n".join(blocks)
 

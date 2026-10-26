@@ -3,9 +3,9 @@
   "app": "MeetMiner",
   "version": "1.2.0",
   "engine": "rag",
-  "generated": "2026-10-26T10:42:39",
+  "generated": "2026-10-26T11:04:43",
   "decision": "SHIP",
-  "total": 100.0,
+  "total": 97.5,
   "gates_failed": [],
   "gates_unmeasured": [],
   "unmeasured": [],
@@ -56,7 +56,7 @@
           "measured": "9/12 (75.0%)",
           "rating": "info",
           "gate": false,
-          "note": "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json"
+          "note": "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-105041.json"
         }
       ]
     },
@@ -77,7 +77,7 @@
         },
         {
           "id": "found_l",
-          "name": "Answer turns retrieved, 60k-token transcripts",
+          "name": "Answer turns retrieved, L transcripts (about 65,000 tokens, 39 meetings)",
           "target": "≥ 100% (amber ≥ 87.5%)",
           "measured": "8/8 (100.0%) (39 meetings)",
           "rating": "green",
@@ -86,7 +86,7 @@
         },
         {
           "id": "found_xl",
-          "name": "Answer turns retrieved, 160k-token transcripts",
+          "name": "Answer turns retrieved, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "≥ 100% (amber ≥ 87.5%)",
           "measured": "8/8 (100.0%) (99 meetings)",
           "rating": "green",
@@ -95,12 +95,12 @@
         },
         {
           "id": "share_xl",
-          "name": "Text sent, share of full context, 160k-token transcripts",
+          "name": "Text sent, share of full context, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
-          "measured": "3% (about 3,528 of 114,328 tokens)",
+          "measured": "3% (about 4,613 of 169,386 tokens)",
           "rating": "info",
           "gate": false,
-          "note": "evals/results/retrieval-20261026-103222.json"
+          "note": "evals/results/retrieval-20261026-104853.json"
         },
         {
           "id": "traps",
@@ -122,7 +122,7 @@
         },
         {
           "id": "heldout_found_xl_hard",
-          "name": "Held-out answer turns retrieved, 160k-token transcripts with near-miss filler",
+          "name": "Held-out answer turns retrieved, XL transcripts with near-miss filler (99 meetings)",
           "target": "for information",
           "measured": "6/10 (60.0%) (99 meetings, hard distractors)",
           "rating": "info",
@@ -141,7 +141,7 @@
           "id": "verified",
           "name": "Citations verified by the checker",
           "target": "≥ 98% (amber ≥ 95%)",
-          "measured": "283/283 (100.0%) of 110 answers",
+          "measured": "261/262 (99.6%) of 110 answers",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -159,7 +159,7 @@
           "id": "weak",
           "name": "Citations pointing at the wrong turn",
           "target": "≤ 2% (amber ≤ 5%)",
-          "measured": "0/283 (0.0%) of citations",
+          "measured": "1/262 (0.4%) of citations",
           "rating": "green",
           "gate": false,
           "note": ""
@@ -168,7 +168,7 @@
           "id": "numbers",
           "name": "Answers with a number not in its cited turn (GR-INT-04)",
           "target": "≤ 2% (amber ≤ 5%)",
-          "measured": "1/110 (0.9%)",
+          "measured": "2/110 (1.8%)",
           "rating": "green",
           "gate": false,
           "note": ""
@@ -179,13 +179,13 @@
       "id": "ops",
       "name": "Operational performance",
       "weight": 20,
-      "score": 100.0,
+      "score": 87.5,
       "metrics": [
         {
           "id": "p95",
           "name": "p95 latency (RAG has no cache, so no warm/cold split)",
           "target": "≤ 8 s (amber ≤ 15 s)",
-          "measured": "2.22 s",
+          "measured": "2.90 s",
           "rating": "green",
           "gate": false,
           "note": "n=100"
@@ -203,8 +203,8 @@
           "id": "task_success",
           "name": "Tasks done right (answered, correct, cited)",
           "target": "≥ 98% (amber ≥ 95%)",
-          "measured": "99/100 (99.0%)",
-          "rating": "green",
+          "measured": "97/100 (97.0%)",
+          "rating": "amber",
           "gate": false,
           "note": ""
         },
@@ -215,47 +215,47 @@
           "measured": "$0.00036",
           "rating": "green",
           "gate": false,
-          "note": "$0.0354 over 100 attempts"
+          "note": "$0.0348 over 100 attempts"
         },
         {
           "id": "p95_m",
-          "name": "p95 latency, 15k-token transcripts",
+          "name": "p95 latency, M transcripts (about 15,000 tokens, 9 meetings)",
           "target": "for information",
-          "measured": "3.51 s",
+          "measured": "3.83 s",
           "rating": "info",
           "gate": false,
           "note": "n=100"
         },
         {
           "id": "p95_l",
-          "name": "p95 latency, 60k-token transcripts",
+          "name": "p95 latency, L transcripts (about 65,000 tokens, 39 meetings)",
           "target": "for information",
-          "measured": "3.46 s",
+          "measured": "3.52 s",
           "rating": "info",
           "gate": false,
           "note": "n=50"
         },
         {
           "id": "p95_xl",
-          "name": "p95 latency, 160k-token transcripts",
+          "name": "p95 latency, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
-          "measured": "1.85 s",
+          "measured": "2.60 s",
           "rating": "info",
           "gate": false,
           "note": "n=30"
         },
         {
           "id": "cost_xl",
-          "name": "Cost per successful task, 160k-token transcripts",
+          "name": "Cost per successful task, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
-          "measured": "$0.00047",
+          "measured": "$0.00049",
           "rating": "info",
           "gate": false,
-          "note": "$0.0140 over 30 attempts"
+          "note": "$0.0146 over 30 attempts"
         },
         {
           "id": "success_xl",
-          "name": "Tasks done right, 160k-token transcripts",
+          "name": "Tasks done right, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
           "measured": "30/30 (100.0%)",
           "rating": "info",
@@ -295,7 +295,7 @@
           "measured": "10/10 resisted",
           "rating": "green",
           "gate": true,
-          "note": "evals/results/probes-rag-claude-haiku-5-5-20261025-221847.json"
+          "note": "evals/results/probes-rag-claude-haiku-5-5-20261026-105113.json"
         },
         {
           "id": "rag_local",
@@ -318,7 +318,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "262/262 (100.0%)",
+          "measured": "269/269 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -367,20 +367,20 @@
   ],
   "evidence": {
     "ops": [
-      "evals/results/ops-rag-claude-haiku-5-5-S-20261025-221850.jsonl",
-      "evals/results/ops-rag-claude-haiku-5-5-M-20261025-222117.jsonl",
-      "evals/results/ops-rag-claude-haiku-5-5-L-20261025-222351.jsonl",
-      "evals/results/ops-rag-claude-haiku-5-5-XL-20261025-222511.jsonl"
+      "evals/results/ops-rag-claude-haiku-5-5-S-20261026-105116.jsonl",
+      "evals/results/ops-rag-claude-haiku-5-5-M-20261026-105402.jsonl",
+      "evals/results/ops-rag-claude-haiku-5-5-L-20261026-105646.jsonl",
+      "evals/results/ops-rag-claude-haiku-5-5-XL-20261026-105811.jsonl"
     ],
-    "quality": "evals/results/quality-rag-claude-haiku-5-5-20261026-103439.json",
-    "probes": "evals/results/probes-rag-claude-haiku-5-5-20261025-221847.json",
-    "retrieval": "evals/results/retrieval-20261026-103222.json",
+    "quality": "evals/results/quality-rag-claude-haiku-5-5-20261026-105014.json",
+    "probes": "evals/results/probes-rag-claude-haiku-5-5-20261026-105113.json",
+    "retrieval": "evals/results/retrieval-20261026-104853.json",
     "heldout": [
-      "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json",
-      "evals/results/retrieval-heldout-20261026-103231.json",
-      "evals/results/retrieval-heldout-hard-20261026-103235.json"
+      "evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-105041.json",
+      "evals/results/retrieval-heldout-20261026-104901.json",
+      "evals/results/retrieval-heldout-hard-20261026-104904.json"
     ],
-    "unit_tests": "262/262 ok",
+    "unit_tests": "269/269 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

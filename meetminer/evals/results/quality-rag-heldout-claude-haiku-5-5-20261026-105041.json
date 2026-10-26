@@ -1,0 +1,330 @@
+{
+  "suite": "quality",
+  "engine": "rag",
+  "model": "claude-haiku-5-5",
+  "effort": "low",
+  "questions_set": "heldout",
+  "run_at": "2026-10-26T10:50:41",
+  "questions": 12,
+  "passed": 9,
+  "cost_usd": 0.004895,
+  "outcomes": [
+    {
+      "id": "ho-go-out-day",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000449,
+      "answer": "Not found in the transcripts. I searched for a site rebuild, its release or go-live date, and any blocker. The excerpts cover a customer onboarding call (go-live November 17th for Brightwater Logistics) and a product planning call about the customer portal redesign (Project Lighthouse, launch moved to November 14th because the payment provider integration was behind). Neither mentions a site rebuild. If the portal redesign is what you mean, the excerpts say it was moved to November 14th because of the payment integration delay, citing [Product planning call, Speaker 1, 00:00], and Marcus's explanation that the provider changed its sandbox, citing [Product planning call, Speaker 2, 01:35]. However, the excerpts do not say that this is going out to everyone, so I can't confirm that it is the site rebuild you mean.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 18,
+        "tokens_estimate": 2479,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-go-out-gate",
+      "kind": "lookup",
+      "follows": "ho-go-out-day",
+      "passed": true,
+      "cost": 0.000664,
+      "answer": "Yes, several things in the excerpts are prerequisites. The excerpts don't mention a site rebuild, so these are for the two meetings as they stand.\n\n**Product planning call (Project Lighthouse, portal redesign):**\n- **Launch on November 14th:** Marcus said he would not go earlier, and the launch depends on the payment integration being tested properly. [Product planning call, Speaker 2, 01:35]\n- **Rollback switch:** The team agreed there is no launch without it. Marcus will build it before launch. [Product planning call, Speaker 1, 05:50] and [Product planning call, Speaker 2, 05:05]\n- **API spec:** Marcus's front end team needs it, and he will deliver the first complete version by October 30th so the front end team can build against it. [Product planning call, Speaker 2, 01:35]\n- **Beta invitations on November 3rd:** Leo drafts the beta announcement email by November 2nd, and support joins the beta kickoff. [Product planning call, Speaker 1, 06:30] and [Product planning call, Speaker 4, 06:05]\n\n**Customer onboarding call (Brightwater Logistics):**\n- **Going live on November 17th:** This needs single sign-on set up by November 7th, the CSV data export, and two training sessions. [Customer onboarding call, Speaker 1, 00:00]\n- **Signing before go-live:** Sam said the company's policy needs finance and security to review before any signature, and the SOC 2 Type II report and a data processing agreement are required. [Customer onboarding call, Speaker 3, 02:15] Sam also said signing has to happen in the week of the 10th for the November 17th go-live to work. [Customer onboarding call, Speaker 3, 06:10]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 9,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 21,
+        "tokens_estimate": 2794,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-outside-testers",
+      "kind": "lookup",
+      "follows": null,
+      "passed": false,
+      "cost": 0.000244,
+      "answer": "Not found in the transcripts. I searched the excerpts for an agreed spending ceiling tied to bringing in outside people to check quality (for example, an external audit or consultant budget). The excerpts cover the Brightwater Logistics onboarding pricing (seats, monthly and annual fees, a prepayment discount) and a product planning discussion about a rollback switch and support readiness. Neither mentions an outside quality check or a spending limit for one.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [
+        "mentions '18,000'",
+        "cites a 'planning' meeting"
+      ],
+      "retrieval": {
+        "turns": 5,
+        "tokens_estimate": 912,
+        "answer_turns_found": [
+          false
+        ]
+      }
+    },
+    {
+      "id": "ho-early-access",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000417,
+      "answer": "Not found in the transcripts. I looked for an early-access or beta group of client companies and the date they are invited to join.\n\nThe closest match is the product planning call, which describes a beta, not an early-access group of client companies. The speaker says: \"I'd like to invite 25 customers and send the invites on November 3rd, so we get a full week of feedback before launch\" [Product planning call, Speaker 1, 00:00]. Later, Speaker 4 says the invites go out \"on the 3rd\" [Product planning call, Speaker 4, 04:10]. That is a beta of 25 customers, not explicitly client companies, and the transcript does not call it early access.",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 16,
+        "tokens_estimate": 2445,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-night-theme",
+      "kind": "lookup",
+      "follows": null,
+      "passed": false,
+      "cost": 0.00029,
+      "answer": "Not found in the transcripts. I searched both meetings (Customer onboarding call and Product planning call) for a low-light colour scheme, its status for the first release, and any effort estimate for it. Neither excerpt mentions a colour scheme. The closest related item is the Product planning call, where Speaker 1 says Dana will be asked about designs (\"Dana, how are the designs?\"), but the answer from Dana is not included in the excerpts, so it does not address the question.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [
+        "mentions 'three days'",
+        "mentions 'two'",
+        "cites a 'planning' meeting"
+      ],
+      "retrieval": {
+        "turns": 5,
+        "tokens_estimate": 1407,
+        "answer_turns_found": [
+          false,
+          false
+        ]
+      }
+    },
+    {
+      "id": "ho-compliance-paperwork",
+      "kind": "lookup",
+      "follows": null,
+      "passed": false,
+      "cost": 0.000366,
+      "answer": "Not found in the transcripts. I looked for any mention of compliance paperwork, certifications, audits, security questionnaires, or similar documents requested by a client before committing. The excerpts cover pricing and seats, SAML single sign-on setup, a CSV data export, training dates, support terms (Customer onboarding call), and the Project Lighthouse launch plan, budget, scope, and rollback switch (Product planning call). None of them mention compliance documentation.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [
+        "mentions 'soc 2'",
+        "mentions 'data processing'",
+        "cites a 'onboarding' meeting"
+      ],
+      "retrieval": {
+        "turns": 14,
+        "tokens_estimate": 2264,
+        "answer_turns_found": [
+          false
+        ]
+      }
+    },
+    {
+      "id": "ho-yearly-bill",
+      "kind": "lookup",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000303,
+      "answer": "The yearly bill would be $10,800 if they prepay the full year.\n\nThe base annual price is $12,000 (40 seats at $25 per seat per month, which is $1,000 a month), and prepaying for the full year gives a 10% discount, bringing it to $10,800 [Customer onboarding call, Speaker 1, 00:00]. The prepay is invoiced upfront with net 30 payment terms [Customer onboarding call, Speaker 1, 03:50].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 8,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 7,
+        "tokens_estimate": 1522,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-login-tech",
+      "kind": "commitment",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000523,
+      "answer": "Their IT team has to configure **single sign-on using SAML**, and the target date is **November 7th**. [Customer onboarding call, Speaker 1, 00:00]\n\nJordan (operations) said the November 7th date was not yet confirmed. Their IT person, Kofi, is only in two days a week, so Jordan planned to ask him that day and report back if the date was a problem. [Customer onboarding call, Speaker 2, 01:40]",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 2,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 19,
+        "tokens_estimate": 2698,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-login-person",
+      "kind": "commitment",
+      "follows": "ho-login-tech",
+      "passed": true,
+      "cost": 0.000347,
+      "answer": "Not found in the transcripts. I looked for whether the IT person who handles single sign-on is in the office full time. The excerpts only say that Kofi, their IT person, is \"only in two days a week.\" [Customer onboarding call, Speaker 2, 01:40] That suggests he is not there all the time, but the excerpts don't say whether he is the only person who handles this or whether anyone else in the office could cover it.",
+      "error": "",
+      "citations": [
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 15,
+        "tokens_estimate": 1915,
+        "answer_turns_found": [
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-cross",
+      "kind": "comparison",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000557,
+      "answer": "Audit certificate request: In the customer onboarding call, Sam (Speaker 3, finance) asked for a SOC 2 Type II report before signing: \"We need your SOC 2 Type II report, and we need a data processing agreement\" [Customer onboarding call, Speaker 3, 02:15]. The onboarding call's Speaker 1 agreed to send it: \"I'll send the SOC 2 Type II report and the data processing agreement by Wednesday\" [Customer onboarding call, Speaker 1, 03:00]. The transcript does not describe this as an independent audit, only as a report Sam requested.\n\nExtra money for another tester: In the product planning call, Speaker 1 asked for more budget for contractor QA help: \"because the schedule moved and we need a second tester, I'm asking for $18,000\" [Product planning call, Speaker 1, 00:00]. The original budget was $12,000 for contractor help on QA. Finance had approved it on the condition that the spend stays under that figure [Product planning call, Speaker 1, 00:00]. Marcus also explained why the contractor budget mattered, since QA lead Hannah is on leave from November 8th to the 10th [Product planning call, Speaker 2, 01:35].",
+      "error": "",
+      "citations": [
+        "ok",
+        "ok",
+        "ok",
+        "ok",
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 7,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 19,
+        "tokens_estimate": 2883,
+        "answer_turns_found": [
+          true,
+          true
+        ]
+      }
+    },
+    {
+      "id": "ho-trap-hiring",
+      "kind": "not_in_data",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000333,
+      "answer": "Not found in the transcripts. I looked for any mention of engineer hiring or recruitment plans for next quarter across both meetings (the Customer onboarding call and the Product planning call). The excerpts discuss a contractor budget increase for QA help ($12,000 to $18,000, per [Product planning call, Speaker 1, 00:00]) and a second tester, but they do not give a number of engineers to recruit or any next-quarter hiring plan. Note that the excerpts also do not show the full meetings, so the answer may lie in parts not shown.",
+      "error": "",
+      "citations": [
+        "ok"
+      ],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 8,
+        "tokens_estimate": 1695,
+        "answer_turns_found": []
+      }
+    },
+    {
+      "id": "ho-trap-renewal",
+      "kind": "not_in_data",
+      "follows": null,
+      "passed": true,
+      "cost": 0.000403,
+      "answer": "Not found in the transcripts. I searched both meetings for any discussion of renewal, renewal terms, or what happens after the first year. The onboarding call covers pricing (the 10% annual prepay discount, the November 20th price hold), the technical setup, and signature timing, but nothing about renewing after year one. The product planning call covers the Project Lighthouse launch date, scope, budget, and beta, with no mention of a renewal either.",
+      "error": "",
+      "citations": [],
+      "uncited_missing": 0,
+      "numbers": {
+        "checked": 0,
+        "flagged": 0
+      },
+      "failed_checks": [],
+      "retrieval": {
+        "turns": 18,
+        "tokens_estimate": 2658,
+        "answer_turns_found": []
+      }
+    }
+  ]
+}

@@ -68,15 +68,15 @@ dimensions:
         green_by_model: {claude-haiku-5-5: 0.0005, claude-sonnet-5-5: 0.006, claude-opus-5-5: 0.012}
         amber_factor: 2          # amber up to twice the green figure
         format: usd
-      - {id: p95_warm_m, name: "p95 latency, cache warm, 15k-token transcripts", source: ops.p95_warm_M, info: true, format: seconds}
-      - {id: p95_warm_l, name: "p95 latency, cache warm, 60k-token transcripts", source: ops.p95_warm_L, info: true, format: seconds}
-      - {id: cost_m, name: "Cost per successful task, 15k-token transcripts", source: ops.cost_per_success_M, info: true, format: usd}
-      - {id: cost_l, name: "Cost per successful task, 60k-token transcripts", source: ops.cost_per_success_L, info: true, format: usd}
-      - {id: success_m, name: "Tasks done right, 15k-token transcripts", source: ops.task_success_M, info: true, format: percent}
-      - {id: success_l, name: "Tasks done right, 60k-token transcripts", source: ops.task_success_L, info: true, format: percent}
-      - {id: p95_warm_xl, name: "p95 latency, cache warm, 160k-token transcripts", source: ops.p95_warm_XL, info: true, format: seconds}
-      - {id: cost_xl, name: "Cost per successful task, 160k-token transcripts", source: ops.cost_per_success_XL, info: true, format: usd}
-      - {id: success_xl, name: "Tasks done right, 160k-token transcripts", source: ops.task_success_XL, info: true, format: percent}
+      - {id: p95_warm_m, name: "p95 latency, cache warm, M transcripts (about 15,000 tokens, 9 meetings)", source: ops.p95_warm_M, info: true, format: seconds}
+      - {id: p95_warm_l, name: "p95 latency, cache warm, L transcripts (about 65,000 tokens, 39 meetings)", source: ops.p95_warm_L, info: true, format: seconds}
+      - {id: cost_m, name: "Cost per successful task, M transcripts (about 15,000 tokens, 9 meetings)", source: ops.cost_per_success_M, info: true, format: usd}
+      - {id: cost_l, name: "Cost per successful task, L transcripts (about 65,000 tokens, 39 meetings)", source: ops.cost_per_success_L, info: true, format: usd}
+      - {id: success_m, name: "Tasks done right, M transcripts (about 15,000 tokens, 9 meetings)", source: ops.task_success_M, info: true, format: percent}
+      - {id: success_l, name: "Tasks done right, L transcripts (about 65,000 tokens, 39 meetings)", source: ops.task_success_L, info: true, format: percent}
+      - {id: p95_warm_xl, name: "p95 latency, cache warm, XL transcripts (about 160,000 tokens, 99 meetings)", source: ops.p95_warm_XL, info: true, format: seconds}
+      - {id: cost_xl, name: "Cost per successful task, XL transcripts (about 160,000 tokens, 99 meetings)", source: ops.cost_per_success_XL, info: true, format: usd}
+      - {id: success_xl, name: "Tasks done right, XL transcripts (about 160,000 tokens, 99 meetings)", source: ops.task_success_XL, info: true, format: percent}
 
   - id: safety
     name: "Safety and privacy"

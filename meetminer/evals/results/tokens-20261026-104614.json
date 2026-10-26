@@ -1,0 +1,234 @@
+{
+  "suite": "TOK-01",
+  "run_at": "2026-10-26T10:46:06",
+  "models": {
+    "claude-haiku-5-5": {
+      "cells": {
+        "S": {
+          "meetings": 2,
+          "chars": 11270,
+          "actual": 3854,
+          "estimate": 2817,
+          "chars_div_4": 2817,
+          "chars_per_token": 2.924
+        },
+        "M": {
+          "meetings": 9,
+          "chars": 43554,
+          "actual": 15093,
+          "estimate": 10888,
+          "chars_div_4": 10888,
+          "chars_per_token": 2.886
+        },
+        "L": {
+          "meetings": 39,
+          "chars": 182912,
+          "actual": 64684,
+          "estimate": 45728,
+          "chars_div_4": 45728,
+          "chars_per_token": 2.828
+        },
+        "XL": {
+          "meetings": 99,
+          "chars": 457342,
+          "actual": 162721,
+          "estimate": 114335,
+          "chars_div_4": 114335,
+          "chars_per_token": 2.811
+        }
+      },
+      "rag": {
+        "launch-date": {
+          "prompt_actual": 3439,
+          "excerpt_actual": 2607,
+          "excerpt_chars": 7630,
+          "retriever_estimate": 1874,
+          "excerpt_chars_div_4": 1907,
+          "budget": 6000
+        },
+        "qa-budget": {
+          "prompt_actual": 5588,
+          "excerpt_actual": 4756,
+          "excerpt_chars": 13394,
+          "retriever_estimate": 3210,
+          "excerpt_chars_div_4": 3348,
+          "budget": 6000
+        },
+        "beta-group": {
+          "prompt_actual": 3460,
+          "excerpt_actual": 2628,
+          "excerpt_chars": 7718,
+          "retriever_estimate": 1890,
+          "excerpt_chars_div_4": 1929,
+          "budget": 6000
+        },
+        "api-spec-owner": {
+          "prompt_actual": 3370,
+          "excerpt_actual": 2538,
+          "excerpt_chars": 7480,
+          "retriever_estimate": 1831,
+          "excerpt_chars_div_4": 1870,
+          "budget": 6000
+        },
+        "planning-actions": {
+          "prompt_actual": 9721,
+          "excerpt_actual": 8889,
+          "excerpt_chars": 25169,
+          "retriever_estimate": 5898,
+          "excerpt_chars_div_4": 6292,
+          "budget": 6000
+        },
+        "seat-pricing": {
+          "prompt_actual": 1957,
+          "excerpt_actual": 1125,
+          "excerpt_chars": 3183,
+          "retriever_estimate": 774,
+          "excerpt_chars_div_4": 795,
+          "budget": 6000
+        },
+        "security-documents": {
+          "prompt_actual": 10384,
+          "excerpt_actual": 9552,
+          "excerpt_chars": 26185,
+          "retriever_estimate": 5945,
+          "excerpt_chars_div_4": 6546,
+          "budget": 6000
+        },
+        "cross-meeting": {
+          "prompt_actual": 6748,
+          "excerpt_actual": 5916,
+          "excerpt_chars": 16705,
+          "retriever_estimate": 4003,
+          "excerpt_chars_div_4": 4176,
+          "budget": 6000
+        },
+        "trap-competitor": {
+          "prompt_actual": 2333,
+          "excerpt_actual": 1501,
+          "excerpt_chars": 4359,
+          "retriever_estimate": 1063,
+          "excerpt_chars_div_4": 1089,
+          "budget": 6000
+        },
+        "trap-kubernetes": {
+          "no_match": true
+        }
+      },
+      "rag_rules_tokens": 832
+    },
+    "claude-sonnet-5-5": {
+      "cells": {
+        "S": {
+          "meetings": 2,
+          "chars": 11270,
+          "actual": 3854,
+          "estimate": 2817,
+          "chars_div_4": 2817,
+          "chars_per_token": 2.924
+        },
+        "M": {
+          "meetings": 9,
+          "chars": 43554,
+          "actual": 15093,
+          "estimate": 10888,
+          "chars_div_4": 10888,
+          "chars_per_token": 2.886
+        },
+        "L": {
+          "meetings": 39,
+          "chars": 182912,
+          "actual": 64684,
+          "estimate": 45728,
+          "chars_div_4": 45728,
+          "chars_per_token": 2.828
+        },
+        "XL": {
+          "meetings": 99,
+          "chars": 457342,
+          "actual": 162721,
+          "estimate": 114335,
+          "chars_div_4": 114335,
+          "chars_per_token": 2.811
+        }
+      },
+      "rag": {
+        "launch-date": {
+          "prompt_actual": 3439,
+          "excerpt_actual": 2607,
+          "excerpt_chars": 7630,
+          "retriever_estimate": 1874,
+          "excerpt_chars_div_4": 1907,
+          "budget": 6000
+        },
+        "qa-budget": {
+          "prompt_actual": 5588,
+          "excerpt_actual": 4756,
+          "excerpt_chars": 13394,
+          "retriever_estimate": 3210,
+          "excerpt_chars_div_4": 3348,
+          "budget": 6000
+        },
+        "beta-group": {
+          "prompt_actual": 3460,
+          "excerpt_actual": 2628,
+          "excerpt_chars": 7718,
+          "retriever_estimate": 1890,
+          "excerpt_chars_div_4": 1929,
+          "budget": 6000
+        },
+        "api-spec-owner": {
+          "prompt_actual": 3370,
+          "excerpt_actual": 2538,
+          "excerpt_chars": 7480,
+          "retriever_estimate": 1831,
+          "excerpt_chars_div_4": 1870,
+          "budget": 6000
+        },
+        "planning-actions": {
+          "prompt_actual": 9721,
+          "excerpt_actual": 8889,
+          "excerpt_chars": 25169,
+          "retriever_estimate": 5898,
+          "excerpt_chars_div_4": 6292,
+          "budget": 6000
+        },
+        "seat-pricing": {
+          "prompt_actual": 1957,
+          "excerpt_actual": 1125,
+          "excerpt_chars": 3183,
+          "retriever_estimate": 774,
+          "excerpt_chars_div_4": 795,
+          "budget": 6000
+        },
+        "security-documents": {
+          "prompt_actual": 10384,
+          "excerpt_actual": 9552,
+          "excerpt_chars": 26185,
+          "retriever_estimate": 5945,
+          "excerpt_chars_div_4": 6546,
+          "budget": 6000
+        },
+        "cross-meeting": {
+          "prompt_actual": 6748,
+          "excerpt_actual": 5916,
+          "excerpt_chars": 16705,
+          "retriever_estimate": 4003,
+          "excerpt_chars_div_4": 4176,
+          "budget": 6000
+        },
+        "trap-competitor": {
+          "prompt_actual": 2333,
+          "excerpt_actual": 1501,
+          "excerpt_chars": 4359,
+          "retriever_estimate": 1063,
+          "excerpt_chars_div_4": 1089,
+          "budget": 6000
+        },
+        "trap-kubernetes": {
+          "no_match": true
+        }
+      },
+      "rag_rules_tokens": 832
+    }
+  }
+}

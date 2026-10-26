@@ -1,0 +1,120 @@
+{
+  "suite": "TOK-01",
+  "run_at": "2026-10-26T10:48:46",
+  "models": {
+    "claude-haiku-5-5": {
+      "cells": {
+        "S": {
+          "meetings": 2,
+          "chars": 11270,
+          "actual": 3854,
+          "estimate": 4175,
+          "chars_div_4": 2817,
+          "chars_per_token": 2.924
+        },
+        "M": {
+          "meetings": 9,
+          "chars": 43554,
+          "actual": 15093,
+          "estimate": 16132,
+          "chars_div_4": 10888,
+          "chars_per_token": 2.886
+        },
+        "L": {
+          "meetings": 39,
+          "chars": 182912,
+          "actual": 64684,
+          "estimate": 67746,
+          "chars_div_4": 45728,
+          "chars_per_token": 2.828
+        },
+        "XL": {
+          "meetings": 99,
+          "chars": 457342,
+          "actual": 162721,
+          "estimate": 169386,
+          "chars_div_4": 114335,
+          "chars_per_token": 2.811
+        }
+      },
+      "rag": {
+        "launch-date": {
+          "prompt_actual": 3439,
+          "excerpt_actual": 2607,
+          "excerpt_chars": 7630,
+          "retriever_estimate": 2826,
+          "excerpt_chars_div_4": 1907,
+          "budget": 6000
+        },
+        "qa-budget": {
+          "prompt_actual": 5588,
+          "excerpt_actual": 4756,
+          "excerpt_chars": 13394,
+          "retriever_estimate": 4961,
+          "excerpt_chars_div_4": 3348,
+          "budget": 6000
+        },
+        "beta-group": {
+          "prompt_actual": 3460,
+          "excerpt_actual": 2628,
+          "excerpt_chars": 7718,
+          "retriever_estimate": 2859,
+          "excerpt_chars_div_4": 1929,
+          "budget": 6000
+        },
+        "api-spec-owner": {
+          "prompt_actual": 3370,
+          "excerpt_actual": 2538,
+          "excerpt_chars": 7480,
+          "retriever_estimate": 2771,
+          "excerpt_chars_div_4": 1870,
+          "budget": 6000
+        },
+        "planning-actions": {
+          "prompt_actual": 6088,
+          "excerpt_actual": 5256,
+          "excerpt_chars": 15144,
+          "retriever_estimate": 5609,
+          "excerpt_chars_div_4": 3786,
+          "budget": 6000
+        },
+        "seat-pricing": {
+          "prompt_actual": 1957,
+          "excerpt_actual": 1125,
+          "excerpt_chars": 3183,
+          "retriever_estimate": 1179,
+          "excerpt_chars_div_4": 795,
+          "budget": 6000
+        },
+        "security-documents": {
+          "prompt_actual": 6289,
+          "excerpt_actual": 5457,
+          "excerpt_chars": 15068,
+          "retriever_estimate": 5581,
+          "excerpt_chars_div_4": 3767,
+          "budget": 6000
+        },
+        "cross-meeting": {
+          "prompt_actual": 6214,
+          "excerpt_actual": 5382,
+          "excerpt_chars": 15254,
+          "retriever_estimate": 5650,
+          "excerpt_chars_div_4": 3813,
+          "budget": 6000
+        },
+        "trap-competitor": {
+          "prompt_actual": 2333,
+          "excerpt_actual": 1501,
+          "excerpt_chars": 4359,
+          "retriever_estimate": 1615,
+          "excerpt_chars_div_4": 1089,
+          "budget": 6000
+        },
+        "trap-kubernetes": {
+          "no_match": true
+        }
+      },
+      "rag_rules_tokens": 832
+    }
+  }
+}

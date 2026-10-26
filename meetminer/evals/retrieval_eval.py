@@ -31,9 +31,9 @@ sys.path.insert(0, str(HERE))
 import corpus  # noqa: E402
 import questionset  # noqa: E402
 from meetminer import retrieval  # noqa: E402
-from meetminer.engine import DEFAULTS, SYSTEM_RULES  # noqa: E402
+from meetminer.engine import DEFAULTS, build_system, build_system_rag  # noqa: E402
 from meetminer.retrieval import Retriever  # noqa: E402
-from meetminer.transcripts import load_meetings, render_corpus  # noqa: E402
+from meetminer.transcripts import CHARS_PER_TOKEN, estimate_tokens, load_meetings, render_corpus  # noqa: E402
 
 RESULTS = HERE / "results"
 
@@ -59,7 +59,9 @@ def synonyms_fingerprint(synonyms: dict) -> str:
 
 def evaluate_cell(cell: str, questions: list[dict], workdir: Path, distractors: str = "easy") -> dict:
     meetings = load_meetings(corpus.build_cell(cell, workdir, distractors=distractors)).meetings
-    full_tokens = (len(SYSTEM_RULES) + len(render_corpus(meetings))) // 4  # estimate: about 4 characters per token
+    # Estimates of the prompts exactly as the engines build them (transcripts.estimate_tokens, calibrated against the
+    # count_tokens endpoint; evals/token_count.py measures the real counts).
+    full_tokens = estimate_tokens(build_system(render_corpus(meetings), "5m")[0]["text"])
     started = time.perf_counter()
     retriever = Retriever(meetings, DEFAULTS["rag_top_k"], DEFAULTS["rag_neighbors"], DEFAULTS["rag_max_tokens"])
     build_ms = (time.perf_counter() - started) * 1000
@@ -74,7 +76,7 @@ def evaluate_cell(cell: str, questions: list[dict], workdir: Path, distractors: 
         gold = [tuple(t.split("|")) for t in q.get("answer_turns", [])]
         found = [got.holds(*g) for g in gold]
         if got.turns:
-            sent.append(got.tokens_estimate + len(SYSTEM_RULES) // 4)
+            sent.append(estimate_tokens(build_system_rag(got.text)[0]["text"]))
         per_question.append({"id": q["id"], "kind": q.get("kind", ""), "follows": q.get("follows"),
                              "turns": len(got.turns), "meetings": len(got.meetings),
                              "tokens_estimate": got.tokens_estimate, "answer_turns": len(gold),
@@ -135,7 +137,7 @@ def main() -> int:
     summary = {"suite": "RET-01", "engine": "rag", "run_at": datetime.now().isoformat(timespec="seconds"),
                "questions_set": qset, "questions_file": Path(args.questions).resolve().relative_to(ROOT).as_posix()
                if Path(args.questions).resolve().is_relative_to(ROOT) else str(args.questions),
-               "distractors": args.distractors, "synonyms": args.synonyms,
+               "distractors": args.distractors, "synonyms": args.synonyms, "chars_per_token": CHARS_PER_TOKEN,
                "synonyms_fingerprint": synonyms_fingerprint(synonyms),
                "settings": {k: DEFAULTS[k] for k in ("rag_top_k", "rag_neighbors", "rag_max_tokens")}, "cells": cells}
     out.write_text(json.dumps(summary, indent=2), encoding="utf-8")

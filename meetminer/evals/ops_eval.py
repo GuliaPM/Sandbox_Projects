@@ -3,7 +3,7 @@
     python evals/ops_eval.py --cell S --reps 10 --dry-run     cost estimate only (no spend)
     python evals/ops_eval.py --cell S --reps 10 --yes         100 attempts on the sample transcripts (about $0.002 on Haiku)
     python evals/ops_eval.py --cell M --model claude-sonnet-5-5 --reps 5 --yes
-    python evals/ops_eval.py --engine rag --cell XL --reps 3 --yes     the RAG engine on ~150k tokens of transcripts
+    python evals/ops_eval.py --engine rag --cell XL --reps 3 --yes     the RAG engine on XL (about 160,000 tokens, 99 meetings)
     python evals/ops_eval.py --report evals/results/ops-*.jsonl     only print the statistics of earlier runs
     python evals/ops_eval.py --questions evals/heldout/questions.yaml --distractors hard --cell L --dry-run
 
@@ -71,7 +71,7 @@ def main() -> int:
     load_env()
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--cell", default="S", choices=["S", "M", "L", "XL"],
-                        help="transcript size: S samples, M ~15k tokens, L ~60k, XL ~150k")
+                        help="transcript size: S samples (~3,900 tokens), M ~15,000, L ~65,000, XL ~160,000 (measured)")
     parser.add_argument("--engine", choices=["full", "rag"], default="full", help="full context (default) or RAG")
     parser.add_argument("--reps", type=int, default=10, help="rounds; each asks every question once (default 10)")
     parser.add_argument("--model", help="override the model for this run")

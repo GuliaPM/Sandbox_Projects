@@ -15,7 +15,7 @@ max_tokens: 2000
 engine: "full"
 rag_top_k: 12          # RAG: best-matching passages to start from
 rag_neighbors: 1       # RAG: turns kept on either side of each passage, so a question and its answer stay together
-rag_max_tokens: 6000   # RAG: most transcript text sent with one question (estimated tokens)
+rag_max_tokens: 6000   # RAG: most excerpt text sent with one question, in real tokens (estimated on the safe side)
 cache_ttl: "5m"
 
 # USD per million tokens (update if Anthropic changes them)

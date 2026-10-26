@@ -107,7 +107,7 @@ class RetrievalTests(unittest.TestCase):
             Retriever(self.meetings).retrieve("price per seat")
             self.assertEqual(list(Path(tmp).rglob("*")), [])
 
-    def test_retrieval_still_finds_the_answers_in_a_60k_token_corpus(self):
+    def test_retrieval_still_finds_the_answers_in_the_l_corpus(self):  # L: about 65,000 tokens, 39 meetings
         with tempfile.TemporaryDirectory() as tmp:
             meetings = load_meetings(corpus.build_cell("L", Path(tmp))).meetings
             big = Retriever(meetings)

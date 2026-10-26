@@ -78,8 +78,15 @@ removed key words.
 | held-out | easy | after | 7/10 | 6/10 | 5/10 | 5/10 | 0/2 |
 | held-out | hard | before | 7/10 | 5/10 | 6/10 | 6/10 | 0/2 |
 | held-out | hard | after | 7/10 | 5/10 | 6/10 | 6/10 | 0/2 |
+| original | easy | after + token fix | 8/8 | 8/8 | 8/8 | 8/8 | 1/2 |
+| original | hard | after + token fix | 8/8 | **7/8** | 7/8 | 7/8 | 1/2 |
+| held-out | easy | after + token fix | 7/10 | 6/10 | 5/10 | 5/10 | 0/2 |
+| held-out | hard | after + token fix | 7/10 | 5/10 | 6/10 | 6/10 | 0/2 |
 
-Sizes: S is the two sample calls; M, L and XL add 7, 37 and 97 filler meetings (9, 39 and 99 meetings in total).
+Sizes: S is the two sample calls; M, L and XL add 7, 37 and 97 filler meetings (9, 39 and 99 meetings in total; about
+3,900, 15,000, 65,000 and 160,000 real tokens, see [TOKENS.md](TOKENS.md)). "After + token fix" is the current state:
+the audited synonyms plus the Task 4 change that makes `rag_max_tokens` mean real tokens, so RAG sends less text than
+before. That moved one more result: `cross-meeting` with hard distractors also misses at M.
 
 What got worse, and why:
 
@@ -97,16 +104,18 @@ What got worse, and why:
 
 Files: `retrieval-pre-audit-20261026-102514.json`, `retrieval-hard-pre-audit-20261026-102524.json`,
 `retrieval-heldout-pre-audit-20261026-102529.json`, `retrieval-heldout-hard-pre-audit-20261026-102534.json` (before);
-`retrieval-20261026-103222.json`, `retrieval-hard-20261026-103227.json`, `retrieval-heldout-20261026-103231.json`,
-`retrieval-heldout-hard-20261026-103235.json` (after). The task-1a baseline, run before any change, is
+`superseded-retrieval-20261026-103222-before-token-fix.json`, `superseded-retrieval-hard-20261026-103227-before-token-fix.json`,
+`superseded-retrieval-heldout-20261026-103231-before-token-fix.json`, `superseded-retrieval-heldout-hard-20261026-103235-before-token-fix.json`
+(after); `retrieval-20261026-104853.json`, `retrieval-hard-20261026-104858.json`, `retrieval-heldout-20261026-104901.json`,
+`retrieval-heldout-hard-20261026-104904.json` (after + token fix). The task-1a baseline, run before any change, is
 `superseded-retrieval-20261026-101900-pre-audit-synonyms-baseline.json` and matches the "original, easy, before" row.
 
 ## 3. Quality eval: original vs held-out (live, Claude Haiku 5.5, effort low, sample transcripts)
 
 | Questions | Full context | RAG (audited synonyms) |
 |---|---|---|
-| original, 10 | 10/10 (`quality-claude-haiku-5-5-20261026-103352.json`) | 10/10 (`quality-rag-claude-haiku-5-5-20261026-103439.json`); 10/10 before the audit (`superseded-quality-rag-claude-haiku-5-5-20261025-221819-pre-audit-synonyms.json`) |
-| held-out, 12 | **10/12** (`quality-heldout-claude-haiku-5-5-20261026-103421.json`) | **9/12** (`quality-rag-heldout-claude-haiku-5-5-20261026-103505.json`) |
+| original, 10 | 10/10 (`quality-claude-haiku-5-5-20261026-103352.json`) | before the audit 10/10 (`superseded-quality-rag-claude-haiku-5-5-20261025-221819-pre-audit-synonyms.json`); after it 10/10 (`superseded-quality-rag-claude-haiku-5-5-20261026-103439-before-token-fix.json`); after the token fix 10/10 (`quality-rag-claude-haiku-5-5-20261026-105014.json`) |
+| held-out, 12 | **10/12** (`quality-heldout-claude-haiku-5-5-20261026-103421.json`) | after the audit **9/12** (`superseded-quality-rag-heldout-claude-haiku-5-5-20261026-103505-before-token-fix.json`); after the token fix **9/12**, the same three questions (`quality-rag-heldout-claude-haiku-5-5-20261026-105041.json`) |
 
 - **RAG held-out failures** (`ho-outside-testers`, `ho-night-theme`, `ho-compliance-paperwork`) are exactly the three
   questions RET-01 could not retrieve at S. The answer turn never reached the model, so it said "not found". This is the
@@ -118,7 +127,8 @@ Files: `retrieval-pre-audit-20261026-102514.json`, `retrieval-hard-pre-audit-202
   the cited turn, which failed the "no invented quotes" check. The answers are recorded as failures, unedited. Both the
   hedging and the checker's treatment of quoted question words are open issues, not fixed here.
 
-Live spend for these four runs: $0.0019 + $0.0024 + $0.0035 + $0.0045 = $0.0123.
+Live spend for the first four runs: $0.0019 + $0.0024 + $0.0035 + $0.0045 = $0.0123; the two RAG re-runs after the token
+fix cost $0.0035 + $0.0049.
 
 ## What this does and does not show
 

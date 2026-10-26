@@ -16,15 +16,20 @@ SYSTEM UNDER TEST
 DATASET
   Questions   evals/questions.yaml: ten questions with known answers (lookups, commitments, a cross-meeting comparison,
               and two whose answer is not in the transcripts).
-  Corpus      Latency and cost grow with the size of the transcripts, so each size is its own "cell":
-                S   samples/transcripts, the two fictional calls (about 3,900 prompt tokens)
-                M   S plus synthetic filler meetings, about 15,000 tokens (roughly two real one-hour calls)
-                L   S plus synthetic filler, about 60,000 tokens (the size at which the app starts to warn)
-                XL  S plus synthetic filler, about 160,000 tokens (some twenty one-hour calls)
+  Corpus      Latency and cost grow with the size of the transcripts, so each size is its own "cell". Sizes are real
+              prompt tokens measured with count_tokens (evals/TOKENS.md); the sample calls run at about 12,700 tokens
+              per hour of talk, which gives the hour equivalents:
+                S   samples/transcripts, the two fictional calls: about 3,900 tokens, 2 meetings
+                M   S plus synthetic filler meetings: about 15,000 tokens, 9 meetings (about one hour-long call)
+                L   S plus synthetic filler: about 65,000 tokens, 39 meetings (about five; just above the 60,000 at
+                    which the app starts to warn)
+                XL  S plus synthetic filler: about 160,000 tokens, 99 meetings (about a dozen)
   Engines     --engine full (default) or --engine rag. RAG sends different excerpts each time, so it has no prompt
               cache and its attempts are recorded as "uncached" instead of cold or warm. A RAG question that matches
               no passage is answered without a call (GR-RAG-01) and counts as an attempt at 0 s and $0.
               The filler (evals/corpus.py) is deterministic and avoids every fact the questions ask about.
+              --distractors hard uses filler with near-miss facts instead, and --questions evals/heldout/questions.yaml
+              the frozen held-out questions (evals/CONTAMINATION.md).
   Size        A round asks every question once. Ten rounds is 100 attempts, the least that makes a p95 mean something
               (with 20 attempts the p95 is just the second-slowest one).
 

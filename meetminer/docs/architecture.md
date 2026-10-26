@@ -49,11 +49,11 @@ check, guardrails, usage log) is the same for both.
 
 | | Full context | RAG |
 |---|---|---|
-| What is sent | every transcript, every question | the passages that match, with one turn either side, up to about 6,000 tokens |
+| What is sent | every transcript, every question | the passages that match, with one turn either side, up to 6,000 real tokens of excerpts (`rag_max_tokens`) |
 | How it is picked | nothing to pick | BM25 keyword ranking over speaker-turn chunks (`retrieval.py`), light stemming, a short synonym list, and the best passage of every other meeting that matches well |
 | Prompt cache | yes: the transcripts block is identical every time | no: the excerpts change with every question, and a cache write costs 1.25x |
-| Can it miss the answer? | no, everything is there | yes, if retrieval does not pick the turn (measured by RET-01) |
-| Grows with the transcripts | cost and latency | almost nothing: about 3,000 tokens whatever the size |
+| Can it miss the answer? | no, everything is there | yes, if retrieval does not pick the turn, most often when the question is worded differently from the transcript (RET-01: on the held-out paraphrases, 7 of 10 found on the sample calls; [CONTAMINATION.md](../evals/CONTAMINATION.md)) |
+| Grows with the transcripts | cost and latency | little: a few thousand tokens per question at every size measured (4,300 on average at XL, about 160,000 tokens; [TOKENS.md](../evals/TOKENS.md)) |
 | Not found | the model says so | the model says so, or, when no passage matches at all, the engine answers without a call (GR-RAG-01) |
 
 The retrieved turns are written in exactly the format the full-context engine uses (`[Meeting, Speaker 2, 04:09] ...`),

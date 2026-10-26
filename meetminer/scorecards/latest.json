@@ -3,7 +3,7 @@
   "app": "MeetMiner",
   "version": "1.2.0",
   "engine": "full",
-  "generated": "2026-10-26T10:40:05",
+  "generated": "2026-10-26T11:01:53",
   "decision": "SHIP",
   "total": 100.0,
   "gates_failed": [],
@@ -166,7 +166,7 @@
         },
         {
           "id": "p95_warm_m",
-          "name": "p95 latency, cache warm, 15k-token transcripts",
+          "name": "p95 latency, cache warm, M transcripts (about 15,000 tokens, 9 meetings)",
           "target": "for information",
           "measured": "4.82 s",
           "rating": "info",
@@ -175,7 +175,7 @@
         },
         {
           "id": "p95_warm_l",
-          "name": "p95 latency, cache warm, 60k-token transcripts",
+          "name": "p95 latency, cache warm, L transcripts (about 65,000 tokens, 39 meetings)",
           "target": "for information",
           "measured": "5.77 s",
           "rating": "info",
@@ -184,7 +184,7 @@
         },
         {
           "id": "cost_m",
-          "name": "Cost per successful task, 15k-token transcripts",
+          "name": "Cost per successful task, M transcripts (about 15,000 tokens, 9 meetings)",
           "target": "for information",
           "measured": "$0.00051",
           "rating": "info",
@@ -193,7 +193,7 @@
         },
         {
           "id": "cost_l",
-          "name": "Cost per successful task, 60k-token transcripts",
+          "name": "Cost per successful task, L transcripts (about 65,000 tokens, 39 meetings)",
           "target": "for information",
           "measured": "$0.00158",
           "rating": "info",
@@ -202,7 +202,7 @@
         },
         {
           "id": "success_m",
-          "name": "Tasks done right, 15k-token transcripts",
+          "name": "Tasks done right, M transcripts (about 15,000 tokens, 9 meetings)",
           "target": "for information",
           "measured": "94/100 (94.0%)",
           "rating": "info",
@@ -211,7 +211,7 @@
         },
         {
           "id": "success_l",
-          "name": "Tasks done right, 60k-token transcripts",
+          "name": "Tasks done right, L transcripts (about 65,000 tokens, 39 meetings)",
           "target": "for information",
           "measured": "49/50 (98.0%)",
           "rating": "info",
@@ -220,7 +220,7 @@
         },
         {
           "id": "p95_warm_xl",
-          "name": "p95 latency, cache warm, 160k-token transcripts",
+          "name": "p95 latency, cache warm, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
           "measured": "6.83 s",
           "rating": "info",
@@ -229,7 +229,7 @@
         },
         {
           "id": "cost_xl",
-          "name": "Cost per successful task, 160k-token transcripts",
+          "name": "Cost per successful task, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
           "measured": "$0.00405",
           "rating": "info",
@@ -238,7 +238,7 @@
         },
         {
           "id": "success_xl",
-          "name": "Tasks done right, 160k-token transcripts",
+          "name": "Tasks done right, XL transcripts (about 160,000 tokens, 99 meetings)",
           "target": "for information",
           "measured": "27/30 (90.0%)",
           "rating": "info",
@@ -301,7 +301,7 @@
           "id": "unit_tests",
           "name": "Unit tests passing",
           "target": "≥ 100%",
-          "measured": "262/262 (100.0%)",
+          "measured": "269/269 (100.0%)",
           "rating": "green",
           "gate": true,
           "note": ""
@@ -362,10 +362,10 @@
     "retrieval": null,
     "heldout": [
       "evals/results/quality-heldout-claude-haiku-5-5-20261026-103421.json",
-      "evals/results/retrieval-heldout-20261026-103231.json",
-      "evals/results/retrieval-heldout-hard-20261026-103235.json"
+      "evals/results/retrieval-heldout-20261026-104901.json",
+      "evals/results/retrieval-heldout-hard-20261026-104904.json"
     ],
-    "unit_tests": "262/262 ok",
+    "unit_tests": "269/269 ok",
     "scan": "CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.",
     "sandbox": "SANDBOX RESULT: PASS (14/14 checks)"
   }

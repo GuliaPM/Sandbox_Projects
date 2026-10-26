@@ -20,8 +20,8 @@ import yaml
 
 from . import guardrails, storage, usagelog
 from .retrieval import Retrieved, Retriever
-from .transcripts import (CheckReport, LoadResult, Meeting, check_citations, load_meetings, render_corpus,
-                         split_multi_citations)
+from .transcripts import (CHARS_PER_TOKEN, CheckReport, LoadResult, Meeting, check_citations, estimate_tokens,
+                          load_meetings, render_corpus, split_multi_citations)
 
 ENGINES = {"full": "Full context", "rag": "RAG"}  # the two ways of giving Claude the transcripts
 
@@ -33,7 +33,7 @@ DEFAULTS = {
     "engine": "full",  # "full": every question sends all transcripts; "rag": only the passages retrieval picks
     "rag_top_k": 12,  # RAG: best-matching passages to start from
     "rag_neighbors": 1,  # RAG: turns kept either side of each passage
-    "rag_max_tokens": 6000,  # RAG: most transcript text sent with one question (estimated tokens)
+    "rag_max_tokens": 6000,  # RAG: most excerpt text sent with one question, in real tokens (estimated on the safe side)
     "effort": "low",
     "max_tokens": 2000,
     "cache_ttl": "5m",
@@ -401,7 +401,7 @@ class MeetingQA:
             )
             return res.input_tokens, "measured"
         except (anthropic.AnthropicError, TypeError):
-            return len(system[0]["text"]) // 4, "estimated"  # no key / offline: ~4 characters per token
+            return estimate_tokens(system[0]["text"]), "estimated"  # no key / offline
 
     def ask(self, question: str, history: list[tuple[str, str]] | None = None) -> Answer:
         s = self.settings
@@ -553,7 +553,8 @@ def inspect(settings: Settings, loaded: LoadResult, qa: MeetingQA) -> None:
     tokens, how = qa.count_corpus_tokens()
     print(f"Corpus prompt size: {tokens:,} tokens ({how}); retrieval threshold {settings.retrieval_threshold_tokens:,}")
     if how == "estimated":
-        print("  (no API key available, so this is characters / 4; add a key in Settings for the exact count)")
+        print(f"  (no API key available, so this is estimated from the length, about {CHARS_PER_TOKEN} characters per "
+              "token; add a key in Settings for the exact count)")
     if tokens > settings.retrieval_threshold_tokens:
         print("  The corpus is above the threshold: time to switch to retrieval (see README).")
 

@@ -1,6 +1,6 @@
 # MeetMiner 1.2.0 release scorecard: RAG engine
 
-**Decision: SHIP**  ·  score 100/100  ·  measured 2026-10-26  ·  configuration: claude-haiku-5-5, RAG, cell S (fictional samples (samples/transcripts))
+**Decision: SHIP**  ·  score 98/100  ·  measured 2026-10-26  ·  configuration: claude-haiku-5-5, RAG, cell S (fictional samples (samples/transcripts))
 
 ## Answer quality  (100/100, weight 30%)
 
@@ -16,35 +16,35 @@
 | Check | Target | Measured | Result |
 |---|---|---|---|
 | Answer turns retrieved, sample transcripts **[gate]** | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (2 meetings) | good |
-| Answer turns retrieved, 60k-token transcripts | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (39 meetings) | good |
-| Answer turns retrieved, 160k-token transcripts | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (99 meetings) | good |
-| Text sent, share of full context, 160k-token transcripts | for information | 3% (about 3,528 of 114,328 tokens) | info |
+| Answer turns retrieved, L transcripts (about 65,000 tokens, 39 meetings) | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (39 meetings) | good |
+| Answer turns retrieved, XL transcripts (about 160,000 tokens, 99 meetings) | ≥ 100% (amber ≥ 87.5%) | 8/8 (100.0%) (99 meetings) | good |
+| Text sent, share of full context, XL transcripts (about 160,000 tokens, 99 meetings) | for information | 3% (about 4,613 of 169,386 tokens) | info |
 | Not-in-the-transcripts questions ended without a call | for information | 1/2 (50.0%) ended without a call | info |
 | Held-out answer turns retrieved, sample transcripts | for information | 7/10 (70.0%) (2 meetings) | info |
-| Held-out answer turns retrieved, 160k-token transcripts with near-miss filler | for information | 6/10 (60.0%) (99 meetings, hard distractors) | info |
+| Held-out answer turns retrieved, XL transcripts with near-miss filler (99 meetings) | for information | 6/10 (60.0%) (99 meetings, hard distractors) | info |
 
 ## Citation integrity  (100/100, weight 15%)
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 283/283 (100.0%) of 110 answers | good |
+| Citations verified by the checker **[gate]** | ≥ 98% (amber ≥ 95%) | 261/262 (99.6%) of 110 answers | good |
 | Answers with an invented quote or unknown citation | ≤ 1% (amber ≤ 3%) | 0/110 (0.0%) | good |
-| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 0/283 (0.0%) of citations | good |
-| Answers with a number not in its cited turn (GR-INT-04) | ≤ 2% (amber ≤ 5%) | 1/110 (0.9%) | good |
+| Citations pointing at the wrong turn | ≤ 2% (amber ≤ 5%) | 1/262 (0.4%) of citations | good |
+| Answers with a number not in its cited turn (GR-INT-04) | ≤ 2% (amber ≤ 5%) | 2/110 (1.8%) | good |
 
-## Operational performance  (100/100, weight 20%)
+## Operational performance  (88/100, weight 20%)
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| p95 latency (RAG has no cache, so no warm/cold split) | ≤ 8 s (amber ≤ 15 s) | 2.22 s | good |
+| p95 latency (RAG has no cache, so no warm/cold split) | ≤ 8 s (amber ≤ 15 s) | 2.90 s | good |
 | Failure rate (outside the person's control) **[gate]** | ≤ 1% (amber ≤ 3%) | 0.0% of 100 (95% upper bound 3.7%) | good |
-| Tasks done right (answered, correct, cited) | ≥ 98% (amber ≥ 95%) | 99/100 (99.0%) | good |
+| Tasks done right (answered, correct, cited) | ≥ 98% (amber ≥ 95%) | 97/100 (97.0%) | watch |
 | Cost per successful task | ≤ $0.001 (amber ≤ $0.002) | $0.00036 | good |
-| p95 latency, 15k-token transcripts | for information | 3.51 s | info |
-| p95 latency, 60k-token transcripts | for information | 3.46 s | info |
-| p95 latency, 160k-token transcripts | for information | 1.85 s | info |
-| Cost per successful task, 160k-token transcripts | for information | $0.00047 | info |
-| Tasks done right, 160k-token transcripts | for information | 30/30 (100.0%) | info |
+| p95 latency, M transcripts (about 15,000 tokens, 9 meetings) | for information | 3.83 s | info |
+| p95 latency, L transcripts (about 65,000 tokens, 39 meetings) | for information | 3.52 s | info |
+| p95 latency, XL transcripts (about 160,000 tokens, 99 meetings) | for information | 2.60 s | info |
+| Cost per successful task, XL transcripts (about 160,000 tokens, 99 meetings) | for information | $0.00049 | info |
+| Tasks done right, XL transcripts (about 160,000 tokens, 99 meetings) | for information | 30/30 (100.0%) | info |
 
 ## Safety and privacy  (100/100, weight 10%)
 
@@ -59,7 +59,7 @@
 
 | Check | Target | Measured | Result |
 |---|---|---|---|
-| Unit tests passing **[gate]** | ≥ 100% | 262/262 (100.0%) | good |
+| Unit tests passing **[gate]** | ≥ 100% | 269/269 (100.0%) | good |
 | Guardrail tests passing | ≥ 100% | 50/50 (100.0%) | good |
 | Install, upgrade and uninstall pass in a sandbox | yes | pass | good |
 | Dependency range bounded and changelog updated | yes | yes | good |
@@ -72,12 +72,12 @@
 
 ## Evidence
 
-- Operational runs: evals/results/ops-rag-claude-haiku-5-5-S-20261025-221850.jsonl, evals/results/ops-rag-claude-haiku-5-5-M-20261025-222117.jsonl, evals/results/ops-rag-claude-haiku-5-5-L-20261025-222351.jsonl, evals/results/ops-rag-claude-haiku-5-5-XL-20261025-222511.jsonl
-- Quality eval: evals/results/quality-rag-claude-haiku-5-5-20261026-103439.json
-- Retrieval eval: evals/results/retrieval-20261026-103222.json
-- Held-out set (information only): evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-103505.json, evals/results/retrieval-heldout-20261026-103231.json, evals/results/retrieval-heldout-hard-20261026-103235.json
-- Injection probes: evals/results/probes-rag-claude-haiku-5-5-20261025-221847.json
-- Unit tests: 262/262 ok
+- Operational runs: evals/results/ops-rag-claude-haiku-5-5-S-20261026-105116.jsonl, evals/results/ops-rag-claude-haiku-5-5-M-20261026-105402.jsonl, evals/results/ops-rag-claude-haiku-5-5-L-20261026-105646.jsonl, evals/results/ops-rag-claude-haiku-5-5-XL-20261026-105811.jsonl
+- Quality eval: evals/results/quality-rag-claude-haiku-5-5-20261026-105014.json
+- Retrieval eval: evals/results/retrieval-20261026-104853.json
+- Held-out set (information only): evals/results/quality-rag-heldout-claude-haiku-5-5-20261026-105041.json, evals/results/retrieval-heldout-20261026-104901.json, evals/results/retrieval-heldout-hard-20261026-104904.json
+- Injection probes: evals/results/probes-rag-claude-haiku-5-5-20261026-105113.json
+- Unit tests: 269/269 ok
 - Release scan: CLEAN: no API key, no personal names or paths, no transcripts, no logs, no settings files.
 - Install test: SANDBOX RESULT: PASS (14/14 checks)
 

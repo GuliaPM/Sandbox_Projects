@@ -15,7 +15,9 @@ import re
 from collections import Counter, defaultdict
 from dataclasses import dataclass, field
 
-from .transcripts import Meeting, Turn, _segments
+from .transcripts import Meeting, Turn, _segments, estimate_tokens, turn_lines
+
+GAP = "[... turns not shown ...]"
 
 STOPWORDS = frozenset("""
 a about above after again against all also am an and any are as at be because been before being below between both but by
@@ -84,7 +86,7 @@ class Retrieved:
     text: str = ""
     turns: list[tuple[Meeting, Turn]] = field(default_factory=list)  # in the order they are shown
     hits: list[tuple[float, Chunk]] = field(default_factory=list)  # the best-matching chunks, best first
-    tokens_estimate: int = 0
+    tokens_estimate: int = 0  # of `text`, from transcripts.estimate_tokens (calibrated against real token counts)
 
     @property
     def meetings(self) -> list[Meeting]:
@@ -148,7 +150,7 @@ def build_query(question: str, history: list[tuple[str, str]] | None = None) -> 
 class Retriever:
     """Picks the turns to send for one question: the best `top_k` chunks, the turns either side of each, and the best
     chunk of every other meeting that matches well (so a question comparing meetings sees all of them), within a budget
-    of about `max_tokens` tokens."""
+    of `max_tokens` real tokens of excerpts (estimated on the safe side; the first passage always goes in)."""
 
     def __init__(self, meetings: list[Meeting], top_k: int = 12, neighbors: int = 1, max_tokens: int = 6000):
         self.meetings = meetings
@@ -181,15 +183,25 @@ class Retriever:
 
         kept: list[tuple[Meeting, int]] = []
         used = 0
+        opened: set[int] = set()
         for meeting, idx in wanted:  # in order of importance, until the budget is spent
-            cost = sum(len(seg) // 4 + 12 for seg in _segments(meeting.turns[idx].text))
+            # What this turn adds to the excerpts: its tagged lines, a possible gap marker, and the meeting's header
+            # the first time. Each part is rounded up, so the sum is an upper bound on the rendered text.
+            cost = sum(estimate_tokens(line + "\n") for line in turn_lines(meeting, meeting.turns[idx]))
+            cost += estimate_tokens(GAP + "\n") + (0 if id(meeting) in opened else estimate_tokens(_header(meeting) + "\n\n"))
             if kept and used + cost > self.max_tokens:
                 continue
             kept.append((meeting, idx))
+            opened.add(id(meeting))
             used += cost
-        return Retrieved(text=render_excerpts(self.meetings, kept), tokens_estimate=used,
+        text = render_excerpts(self.meetings, kept)
+        return Retrieved(text=text, tokens_estimate=estimate_tokens(text),
                          turns=[(m, m.turns[i]) for m in self.meetings for i in sorted(i for mm, i in kept if mm is m)],
                          hits=hits[: self.top_k])
+
+
+def _header(m: Meeting) -> str:
+    return f"=== MEETING: {m.title} | date: {m.date or 'unknown'} | excerpts ==="
 
 
 def render_excerpts(meetings: list[Meeting], kept: list[tuple[Meeting, int]]) -> str:
@@ -203,9 +215,8 @@ def render_excerpts(meetings: list[Meeting], kept: list[tuple[Meeting, int]]) ->
         lines, last = [], None
         for i in idxs:
             if last is not None and i != last + 1:
-                lines.append("[... turns not shown ...]")
-            t = m.turns[i]
-            lines += [f"[{m.title}, {t.label}, {t.start}] {seg}" for seg in _segments(t.text)]
+                lines.append(GAP)
+            lines += turn_lines(m, m.turns[i])
             last = i
-        blocks.append(f"=== MEETING: {m.title} | date: {m.date or 'unknown'} | excerpts ===\n" + "\n".join(lines))
+        blocks.append(_header(m) + "\n" + "\n".join(lines))
     return "\n\n".join(blocks)

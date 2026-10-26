@@ -151,10 +151,11 @@ answers are *not* in the transcripts). The evals, their definitions and the raw 
 | Tasks done right (answered, correct, cited) | 99% | 100% |
 | **Cost per successful task** | **$0.00023** | **$0.0044** |
 
-The same Haiku eval on bigger transcripts (padded with synthetic meetings): at about 15,000 tokens the p95 is 4.8 s,
-94% of tasks are done right and a task costs $0.0005; at about 60,000 tokens (50 attempts) the p95 is 5.8 s, 98% are done
-right and a task costs $0.0016. Cost grows with the transcripts, and accuracy dipped at 15,000 tokens (the synthetic
-filler makes some questions harder), which is one reason the app warns at 60,000 tokens.
+The same Haiku eval on bigger transcripts (padded with synthetic meetings): at about 15,000 tokens (9 meetings) the p95
+is 4.8 s, 94% of tasks are done right and a task costs $0.0005; at about 65,000 tokens (39 meetings, 50 attempts) the p95
+is 5.8 s, 98% are done right and a task costs $0.0016. Cost grows with the transcripts, and accuracy dipped at 15,000
+tokens (the synthetic filler makes some questions harder), which is one reason the app warns at 60,000 tokens. All sizes
+are real token counts, measured ([`evals/TOKENS.md`](evals/TOKENS.md)).
 
 Cost per successful task counts everything spent, failed attempts included, divided by the tasks that were right. Every
 question re-reads all the transcripts, at a tenth of the normal price while the prompt cache is warm (it lasts five minutes
@@ -179,24 +180,27 @@ passage that answers it, RAG does not find it. The audit, the held-out set and t
 
 | Transcripts | Engine | p95 time to answer | Tasks done right | Cost per successful task |
 |---|---|---|---|---|
-| Samples, about 3,900 tokens (100 attempts) | Full context | 3.7 s | 99% | $0.00023 |
-| | RAG | 2.2 s | 99% | $0.00036 |
-| About 15,000 tokens (100 attempts) | Full context | 4.8 s | 94% | $0.00051 |
-| | RAG | 3.5 s | 97% | $0.00050 |
-| About 60,000 tokens (50 attempts) | Full context | 5.8 s | 98% | $0.00158 |
-| | RAG | 3.5 s | 100% | $0.00048 |
-| About 160,000 tokens, 99 meetings (30 attempts) | Full context | 6.8 s | 90% | $0.00405 |
-| | RAG | 1.9 s | 100% | $0.00047 |
+| S: samples, about 3,900 tokens, 2 meetings (100 attempts) | Full context | 3.7 s | 99% | $0.00023 |
+| | RAG | 2.9 s | 97% | $0.00036 |
+| M: about 15,000 tokens, 9 meetings (100 attempts) | Full context | 4.8 s | 94% | $0.00051 |
+| | RAG | 3.8 s | 98% | $0.00051 |
+| L: about 65,000 tokens, 39 meetings (50 attempts) | Full context | 5.8 s | 98% | $0.00158 |
+| | RAG | 3.5 s | 100% | $0.00050 |
+| XL: about 160,000 tokens, 99 meetings (30 attempts) | Full context | 6.8 s | 90% | $0.00405 |
+| | RAG | 2.6 s | 100% | $0.00049 |
 
-At 160,000 tokens RAG sent about 2,900 tokens per question, 2% of what full context sends, and was about nine times
-cheaper per successful task. On the two short sample calls full context is cheaper, because its prompt cache makes
-re-reading them nearly free and RAG uses no cache. One of the two questions whose answer is not in the transcripts
-matched no passage, so RAG answered "not found" without calling Claude at all. The 160,000-token runs are small
-(30 attempts each), so treat that row as a direction rather than a precise figure.
+Token counts are real, measured with Anthropic's token-counting endpoint ([`evals/TOKENS.md`](evals/TOKENS.md)). At XL
+RAG sent about 4,300 tokens per question on average (rules included), 2.6% of what full context sends, and was about
+eight times cheaper per successful task. On the two short sample calls full context is cheaper, because its prompt cache
+makes re-reading them nearly free and RAG uses no cache. One of the two questions whose answer is not in the transcripts
+matched no passage, so RAG answered "not found" without calling Claude at all. The XL runs are small (30 attempts each),
+so treat that row as a direction rather than a precise figure. These are the ten development questions; RAG's misses on
+reworded questions are described above. The RAG rows were measured on 2026-10-26, after the synonym audit and after the
+RAG budget was made to mean real tokens; the full-context rows are from 2026-10-25 (neither change affects that engine).
 
 ### Which engine should I use?
 
-- **A few meetings (up to about 60,000 tokens, roughly ten one-hour calls):** *Full context*. It cannot miss a passage,
+- **A few meetings (up to about 60,000 tokens, roughly five hours of talk):** *Full context*. It cannot miss a passage,
   questions comparing many meetings see everything, and the prompt cache makes it the cheaper of the two.
 - **A larger archive:** *RAG*. Each question sends about the same few thousand tokens however many meetings there are,
   so it stays fast and cheap, and less of your text leaves the PC per question.
@@ -208,8 +212,11 @@ matched no passage, so RAG answered "not found" without calling Claude at all. T
 Before a release the evals, the unit tests, the release scan and an install test are scored against targets in
 [`scorecards/scorecard.spec.yaml`](scorecards/scorecard.spec.yaml) for full context and
 [`scorecards/scorecard-rag.spec.yaml`](scorecards/scorecard-rag.spec.yaml) for RAG (which adds a retrieval dimension).
-Version 1.2.0 scored **SHIP, 100/100** on both: [`scorecards/latest.md`](scorecards/latest.md) (full context) and
-[`scorecards/latest-rag.md`](scorecards/latest-rag.md) (RAG). Read that with care: the targets are proposed starting
+The current cards (version 1.2.0 code plus the unreleased 1.2.1 fixes) are **SHIP, 100/100** for full context
+([`scorecards/latest.md`](scorecards/latest.md)) and **SHIP, 98/100** for RAG
+([`scorecards/latest-rag.md`](scorecards/latest-rag.md)): RAG did 97 of 100 tasks right on the sample calls, below the
+98% target: three answers gave the right facts but wrote their sources without the square-bracket citation format, so
+the checker could not verify them and counted them as not done right. Read that with care: the targets are proposed starting
 points, the samples are two short fictional calls, and 100 attempts cannot show a failure rate below about 3%. The same
 cards are shown in the app, in Settings, on the Full-context reports and RAG reports pages.
 

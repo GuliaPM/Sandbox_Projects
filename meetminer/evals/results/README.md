@@ -39,6 +39,15 @@ questions, which made these out of date:
   list had wrongly given `documents` a new alternative (`paperwork`) instead of only removing entries; a test caught it,
   it was taken out, and RET-01 was run again. The numbers were the same.
 
+The token-count fix (2026-10-26, [TOKENS.md](../TOKENS.md)) made `rag_max_tokens` mean real tokens, so RAG now sends less
+text per question. Everything measured on the RAG engine before it was re-run:
+
+- `superseded-ops-rag-…-20261025-*-pre-audit-synonyms.jsonl` (S, M, L, XL) and
+  `superseded-probes-rag-claude-haiku-5-5-20261025-221847-pre-audit-synonyms.json`: the 1.2.0 RAG runs (old synonyms,
+  old budget).
+- `superseded-quality-rag-…-20261026-10343*/103505-before-token-fix.json` and
+  `superseded-retrieval-*-20261026-1032*-before-token-fix.json`: the runs after the synonym audit, before the token fix.
+
 `quality-claude-haiku-5-5-20261026-103352.json` is a re-run of the full-context quality eval for the held-out comparison;
 it is the newest and so the one used, and the earlier run stays as it was.
 

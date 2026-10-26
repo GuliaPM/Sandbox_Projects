@@ -1,9 +1,14 @@
 """Corpora of different sizes for the speed and cost evals (OPS-01).
 
-Cell S is the two fictional sample calls. Cells M (about 15,000 tokens), L (about 60,000, the size at which the app
-starts to warn) and XL (about 150,000, some twenty one-hour calls) add synthetic filler meetings in Otter's format. The filler is deliberately boring and never touches the
-facts the eval questions ask about (dates, amounts, names, "launch", "beta", "budget"...), so the expected answers do not
-change. It is deterministic: the same size always gives the same files.
+Sizes, as real prompt tokens measured with count_tokens (evals/TOKENS.md):
+  S   the two fictional sample calls: about 3,900 tokens, 2 meetings
+  M   S plus 7 filler meetings: about 15,000 tokens, 9 meetings (about one hour of talk)
+  L   S plus 37 filler meetings: about 65,000 tokens, 39 meetings (just above the 60,000 at which the app warns)
+  XL  S plus 97 filler meetings: about 160,000 tokens, 99 meetings (about a dozen hour-long calls)
+The filler is in Otter's format. The default ("easy") filler is deliberately boring and never touches the facts the eval
+questions ask about (dates, amounts, names, "launch", "beta", "budget"...), so the expected answers do not change;
+--distractors hard uses filler with near-miss facts instead (make_hard_meeting). Both are deterministic: the same size
+always gives the same files.
 """
 from __future__ import annotations
 
@@ -14,7 +19,9 @@ from typing import Callable
 
 ROOT = Path(__file__).resolve().parent.parent
 SAMPLES = ROOT / "samples" / "transcripts"
-# S is whatever the samples measure (about 3,900). XL is about 20 one-hour calls, the scenario RAG is for.
+# The targets the sizes were built for (real tokens). OPS-01 measures each size and accepts it within 10% of its
+# target; the first guess already landed there (M 15,093, L 64,684, XL 162,721), so the files never needed adjusting.
+# Unchanged on purpose: changing a target would change the generated files and break comparison with earlier results.
 TARGET_TOKENS = {"S": 0, "M": 15_000, "L": 60_000, "XL": 150_000}
 
 TITLES = ["Facilities review", "Hiring sync", "Month end close", "Support triage", "Travel policy review",
